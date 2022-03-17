@@ -1,7 +1,7 @@
 //! Asynchronous I/O library based on io_uring.
 
 #![allow(non_snake_case)]
-mod fs;
+pub mod fs;
 mod io;
 mod net;
 

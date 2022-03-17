@@ -1,5 +1,5 @@
 [package]
-name = "Emma"
+name = "emma"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 io-uring = "0.5"
 slab = "0.4"
+
+[dev-dependencies]
+tokio = { version = "1.17.0", features = ["rt"] }

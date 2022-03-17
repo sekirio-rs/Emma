@@ -18,7 +18,11 @@ pub struct File {
 }
 
 impl File {
-    fn async_read<'emma>(
+    // todo
+    pub fn open(f: StdFile) -> Self {
+        Self { std: Arc::new(f) }
+    }
+    pub fn async_read<'emma>(
         &self,
         emma: &'emma mut Emma,
         buf: &'emma mut [u8],
@@ -35,7 +39,7 @@ impl File {
         )
         .build()
         .user_data(token as _);
-        let mut sq = emma.uring.submission();
+        let mut sq = uring.submission();
 
         unsafe {
             sq.push(&entry).unwrap();
@@ -61,10 +65,7 @@ pub struct EmmaRead<'emma> {
 
 impl<'emma> Future for EmmaRead<'emma> {
     type Output = std_io::Result<usize>;
-    fn poll(
-        self: std::pin::Pin<&mut Self>,
-        _cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Self::Output> {
+    fn poll(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
         let handle = self.handle.as_ref();
         unsafe {
             match handle.borrow().slab.get_unchecked(self.token) {
