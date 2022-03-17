@@ -5,10 +5,11 @@ pub mod fs;
 mod io;
 mod net;
 
-use io_uring::{Builder as IoUringBuilder, IoUring};
 use std::cell;
 use std::io as std_io;
 use std::sync::Arc;
+use std::task::Waker;
+use io_uring::IoUring;
 
 /// Build [`Emma`] with custom configuration values.
 pub struct Builder {
@@ -52,6 +53,7 @@ struct Inner {
 
 pub(crate) enum EmmaState {
     Submitted,
-    Waiting,
+    Waiting(Waker),
     Completed,
+    Reserved
 }

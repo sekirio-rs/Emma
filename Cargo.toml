@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 io-uring = "0.5"
 slab = "0.4"
+woke = "0.0.2"
 
 [dev-dependencies]
 tokio = { version = "1.17.0", features = ["rt"] }

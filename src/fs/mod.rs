@@ -70,8 +70,9 @@ impl<'emma> Future for EmmaRead<'emma> {
         unsafe {
             match handle.borrow().slab.get_unchecked(self.token) {
                 &EmmaState::Submitted => Poll::Pending,
-                &EmmaState::Waiting => Poll::Pending,
+                &EmmaState::Waiting(_) => Poll::Pending,
                 &EmmaState::Completed => Poll::Ready(Ok(self.buf.len())), // todo
+                &EmmaState::Reserved => unimplemented!()
             }
         }
     }
