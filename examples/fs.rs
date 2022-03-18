@@ -2,8 +2,8 @@ use std::fs::File;
 use std::io;
 
 fn main() -> io::Result<()> {
-    let f = File::open("readme.rs")?;
-    let f = emma::fs::File::open(f);
+    let f = File::open("README.md")?;
+    let f = emma::fs::File::from_std(f);
 
     let rt = tokio::runtime::Builder::new_current_thread()
         .build()
