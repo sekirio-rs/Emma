@@ -1,7 +1,7 @@
+use std::cell::RefCell;
 use std::fs::File;
 use std::io;
 use std::sync::Arc;
-use std::cell::RefCell;
 
 fn main() -> io::Result<()> {
     let f = File::open("README.md")?;

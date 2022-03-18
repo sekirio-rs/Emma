@@ -44,9 +44,8 @@ impl File {
         )
         .build()
         .user_data(token as _);
-        
-        {
 
+        {
             let uring = &mut emma.uring;
             let mut sq = uring.submission();
 
@@ -56,7 +55,7 @@ impl File {
 
             sq.sync(); // sync to true uring
         }
-        
+
         let handle = emma.inner.clone();
         Box::pin(EmmaRead {
             token,
