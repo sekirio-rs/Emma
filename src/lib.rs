@@ -1,16 +1,22 @@
 //! Asynchronous I/O library based on io_uring.
 
 #![allow(non_snake_case)]
+pub mod error;
 pub mod fs;
 mod io;
 mod net;
 
+use error::EmmaError;
 use io_uring::IoUring;
 use std::cell;
 use std::future::Future;
-use std::io as std_io;
+use std::marker::PhantomData;
+use std::result::Result as StdResult;
 use std::sync::Arc;
 use std::task::Waker;
+
+type Handle<T> = Arc<cell::RefCell<T>>;
+type Result<T> = StdResult<T, error::EmmaError>;
 
 /// Build [`Emma`] with custom configuration values.
 pub struct Builder {
@@ -30,13 +36,13 @@ impl Builder {
         self.entries = entries;
         self
     }
-    pub fn build(self) -> std_io::Result<Emma> {
-        let uring = IoUring::new(self.entries)?;
+    pub fn build(self) -> Result<Emma> {
+        let uring = IoUring::new(self.entries).map_err(|e| EmmaError::IoError(e))?;
         let inner = Inner {
             slab: slab::Slab::with_capacity(Self::DEFAULT_ENTRIES as usize * 10),
         };
         Ok(Emma {
-            uring,
+            uring: Arc::new(cell::RefCell::new(uring)),
             inner: Arc::new(cell::RefCell::new(inner)),
         })
     }
@@ -44,8 +50,8 @@ impl Builder {
 
 // Send + !Sync
 pub struct Emma {
-    pub(crate) uring: IoUring,
-    pub(crate) inner: Arc<cell::RefCell<Inner>>, // use UnsafeCell for best performance
+    pub(crate) uring: Handle<IoUring>,
+    pub(crate) inner: Handle<Inner>, // use UnsafeCell for best performance
 }
 
 struct Inner {
@@ -59,34 +65,43 @@ pub(crate) enum EmmaState {
     _Reserved,
 }
 
-pub struct EmmaReactor(Arc<cell::RefCell<Emma>>);
+pub struct EmmaReactor<'emma> {
+    uring_handle: Handle<IoUring>,
+    inner_handle: Handle<Inner>,
+    _marker: PhantomData<&'emma Emma>,
+}
 
-impl EmmaReactor {
-    pub fn from_emma(emma: &Arc<cell::RefCell<Emma>>) -> EmmaReactor {
-        EmmaReactor(emma.clone())
+impl EmmaReactor<'_> {
+    pub fn from_emma<'emma>(emma: &'emma Emma) -> EmmaReactor<'emma> {
+        EmmaReactor {
+            uring_handle: emma.uring.clone(),
+            inner_handle: emma.inner.clone(),
+            _marker: PhantomData,
+        }
     }
 }
 
-impl Future for EmmaReactor {
-    type Output = std_io::Result<()>;
+impl Future for EmmaReactor<'_> {
+    type Output = Result<()>;
     fn poll(
         self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Self::Output> {
-        // 1. check io_uring
-        // 2. wake reference task
-        // 3. wake or return
+        // 1. check uring instance
+        // 2. traverse cqe, and wake related task
+        // 3. wake itself or return
 
-        let mut emma = self.get_mut().0.borrow_mut();
-        let inner = emma.inner.clone();
-        let uring = &mut emma.uring;
+        let mut uring = self.uring_handle.borrow_mut();
+        let mut inner = self.inner_handle.borrow_mut();
 
-        if inner.borrow().slab.is_empty() {
+        if inner.slab.is_empty() {
+            // all tasks have been completed, return
             return std::task::Poll::Ready(Ok(()));
         }
 
+        // wait at least one submit completed by kernel
         if let Err(e) = uring.submit_and_wait(1) {
-            return std::task::Poll::Ready(Err(e));
+            return std::task::Poll::Ready(Err(EmmaError::IoError(e)));
         }
 
         let mut cq = uring.completion();
@@ -96,14 +111,16 @@ impl Future for EmmaReactor {
             let token = cqe.user_data() as usize;
 
             if ret < 0 {
-                return std::task::Poll::Ready(Err(std_io::Error::from_raw_os_error(-ret)));
+                return std::task::Poll::Ready(Err(EmmaError::IoError(
+                    std::io::Error::from_raw_os_error(-ret),
+                )));
             }
 
             unsafe {
-                let mut inner = inner.borrow_mut();
                 let state = inner.slab.get_unchecked_mut(token);
 
                 if let EmmaState::InExecution(waker) = state {
+                    // wake related task
                     waker.clone().wake();
                 }
 
@@ -111,7 +128,11 @@ impl Future for EmmaReactor {
             }
         }
 
+        cq.sync(); // sync to true completion queue
+
+        // wake reactor itself
         cx.waker().clone().wake();
+
         return std::task::Poll::Pending;
     }
 }

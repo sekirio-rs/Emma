@@ -2,12 +2,13 @@
 //! Based on io_uring
 
 use super::{Emma, EmmaState, Inner as EmmaInner};
+use crate::error::EmmaError;
 use crate::io::EmmaBuf;
+use crate::Handle;
+use crate::Result;
 use io_uring::{opcode, types};
-use std::cell;
 use std::fs::File as StdFile;
 use std::future::Future;
-use std::io as std_io;
 use std::marker::PhantomData;
 use std::os::unix::io::AsRawFd;
 use std::pin::Pin;
@@ -15,6 +16,7 @@ use std::sync::Arc;
 use std::task::{Context, Poll};
 
 pub struct File {
+    // todo
     std: Arc<StdFile>,
 }
 
@@ -27,12 +29,12 @@ impl File {
         self.std.as_ref()
     }
 
-    pub fn async_read<'emma, B: EmmaBuf>(
+    pub fn async_read<'emma, T: EmmaBuf>(
         &self,
-        emma: &'emma mut Emma,
-        buf: &'emma mut B,
-    ) -> Pin<Box<EmmaRead<'emma>>> {
-        // 1. push sqe to uring
+        emma: &'emma Emma,
+        buf: &'emma mut T,
+    ) -> Result<EmmaRead<'emma>> {
+        // 1. push sqe to uring submission queue
         // 2. construct [`EmmaRead`]
 
         let token = emma.inner.borrow_mut().slab.insert(EmmaState::Submitted);
@@ -44,16 +46,18 @@ impl File {
         .build()
         .user_data(token as _);
 
-        let uring = &mut emma.uring;
+        let mut uring = emma.uring.borrow_mut();
         let mut sq = uring.submission();
 
         unsafe {
-            sq.push(&entry).unwrap();
+            if let Err(e) = sq.push(&entry) {
+                return Err(EmmaError::Other(Box::new(e)));
+            }
         }
 
-        sq.sync(); // sync to true uring
+        sq.sync(); // sync to true uring submission queue
 
-        Box::pin(EmmaRead {
+        Ok(EmmaRead {
             token,
             handle: emma.inner.clone(),
             _marker: PhantomData,
@@ -65,13 +69,13 @@ pub struct EmmaRead<'emma> {
     // token in [`EmmaInner::slab`]
     token: usize,
     // handle of Emma
-    handle: Arc<cell::RefCell<EmmaInner>>,
+    handle: Handle<EmmaInner>,
     // maker for lifecycle
     _marker: PhantomData<&'emma Box<dyn EmmaBuf>>,
 }
 
 impl<'emma> Future for EmmaRead<'emma> {
-    type Output = std_io::Result<usize>;
+    type Output = Result<usize>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut handle = self.handle.as_ref().borrow_mut();
@@ -84,7 +88,7 @@ impl<'emma> Future for EmmaRead<'emma> {
                     *state = EmmaState::InExecution(cx.waker().clone());
                     return Poll::Pending;
                 }
-                EmmaState::InExecution(_waker) => return Poll::Pending, // shouldn't reach here
+                EmmaState::InExecution(_waker) => unreachable!(),
                 EmmaState::Completed(t) => {
                     _ret = Some(*t as usize);
                 }
@@ -93,7 +97,7 @@ impl<'emma> Future for EmmaRead<'emma> {
         }
 
         if let Some(x) = _ret {
-            let _ = handle.slab.remove(self.token);
+            let _ = handle.slab.remove(self.token); // remove state in slab
             Poll::Ready(Ok(x))
         } else {
             Poll::Pending
