@@ -41,7 +41,3 @@ unsafe impl<const N: usize> EmmaBuf for [u8; N] {
         self.len()
     }
 }
-<<<<<<< HEAD
-=======
-// todo
->>>>>>> 82be0287a043b482790b4b38b2d9516a8e6cd2d1

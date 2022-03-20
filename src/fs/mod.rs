@@ -31,19 +31,11 @@ impl File {
 
     pub fn async_read<'emma, T: EmmaBuf>(
         &self,
-<<<<<<< HEAD
         emma: &'emma Emma,
         buf: &'emma mut T,
     ) -> Result<EmmaRead<'emma>> {
         // 1. push sqe to uring submission queue
-=======
-        emma: Arc<cell::RefCell<Emma>>,
-        buf: &'emma mut B,
-    ) -> Pin<Box<EmmaRead<'emma>>> {
-        // 1. push sqe to uring
->>>>>>> 82be0287a043b482790b4b38b2d9516a8e6cd2d1
         // 2. construct [`EmmaRead`]
-        let mut emma = emma.borrow_mut();
 
         let token = emma.inner.borrow_mut().slab.insert(EmmaState::Submitted);
         let entry = opcode::Read::new(
@@ -54,7 +46,6 @@ impl File {
         .build()
         .user_data(token as _);
 
-<<<<<<< HEAD
         let mut uring = emma.uring.borrow_mut();
         let mut sq = uring.submission();
 
@@ -67,23 +58,8 @@ impl File {
         sq.sync(); // sync to true uring submission queue
 
         Ok(EmmaRead {
-=======
-        {
-            let uring = &mut emma.uring;
-            let mut sq = uring.submission();
-
-            unsafe {
-                sq.push(&entry).unwrap();
-            }
-
-            sq.sync(); // sync to true uring
-        }
-
-        let handle = emma.inner.clone();
-        Box::pin(EmmaRead {
->>>>>>> 82be0287a043b482790b4b38b2d9516a8e6cd2d1
             token,
-            handle,
+            handle: emma.inner.clone(),
             _marker: PhantomData,
         })
     }
