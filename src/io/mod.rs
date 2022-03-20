@@ -41,4 +41,3 @@ unsafe impl<const N: usize> EmmaBuf for [u8; N] {
         self.len()
     }
 }
-// todo

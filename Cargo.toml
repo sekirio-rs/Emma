@@ -14,3 +14,5 @@ futures = "0.3"
 
 [dev-dependencies]
 tokio = { version = "1.17.0", features = ["rt"] }
+anyhow = "1.0"
+futures = "0.3"
