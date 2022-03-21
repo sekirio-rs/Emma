@@ -14,7 +14,7 @@ fn main() -> io::Result<()> {
     rt.block_on(task(emma, f))
 }
 
-async fn task(emma: emma::Emma, f: emma::fs::File) -> io::Result<()> {
+async fn task(emma: emma::Emma, mut f: emma::fs::File) -> io::Result<()> {
     let mut buf = [0u8; 1024];
     let read_fut = f.async_read(&emma, &mut buf).unwrap();
     let wake_fut = emma::EmmaReactor::from_emma(&emma);

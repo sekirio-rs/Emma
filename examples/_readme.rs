@@ -31,7 +31,7 @@ fn main() -> io::Result<()> {
 fn task_(
     emma: &'static emma::Emma,
     buf: &'static mut [u8; 1024],
-    f: emma::fs::File,
+    mut f: emma::fs::File,
 ) -> tokio::task::JoinHandle<Result<usize, emma::error::EmmaError>> {
     let wake_fut = emma::EmmaReactor::from_emma(emma);
     let read_fut = f.async_read(emma, buf).unwrap();

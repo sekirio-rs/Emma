@@ -30,7 +30,7 @@ impl File {
     }
 
     pub fn async_read<'emma, T: EmmaBuf>(
-        &self,
+        &mut self,
         emma: &'emma Emma,
         buf: &'emma mut T,
     ) -> Result<EmmaRead<'emma>> {
