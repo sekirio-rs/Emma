@@ -71,8 +71,10 @@ pub struct EmmaRead<'emma> {
     // handle of Emma
     handle: Handle<EmmaInner>,
     // maker for lifecycle
-    _marker: PhantomData<&'emma Box<dyn EmmaBuf>>,
+    _marker: PhantomData<&'emma Box<dyn EmmaBuf + Send>>,
 }
+
+unsafe impl Send for EmmaRead<'_> {}
 
 impl<'emma> Future for EmmaRead<'emma> {
     type Output = Result<usize>;

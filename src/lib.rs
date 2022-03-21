@@ -11,11 +11,11 @@ use io_uring::IoUring;
 use std::cell;
 use std::future::Future;
 use std::marker::PhantomData;
+use std::rc::Rc;
 use std::result::Result as StdResult;
-use std::sync::Arc;
 use std::task::Waker;
 
-type Handle<T> = Arc<cell::RefCell<T>>;
+type Handle<T> = Rc<cell::RefCell<T>>;
 type Result<T> = StdResult<T, error::EmmaError>;
 
 /// Build [`Emma`] with custom configuration values.
@@ -42,17 +42,18 @@ impl Builder {
             slab: slab::Slab::with_capacity(Self::DEFAULT_ENTRIES as usize * 10),
         };
         Ok(Emma {
-            uring: Arc::new(cell::RefCell::new(uring)),
-            inner: Arc::new(cell::RefCell::new(inner)),
+            uring: Rc::new(cell::RefCell::new(uring)),
+            inner: Rc::new(cell::RefCell::new(inner)),
         })
     }
 }
 
-// Send + !Sync
 pub struct Emma {
     pub(crate) uring: Handle<IoUring>,
     pub(crate) inner: Handle<Inner>, // use UnsafeCell for best performance
 }
+
+unsafe impl Send for Emma {}
 
 struct Inner {
     pub(crate) slab: slab::Slab<EmmaState>,
@@ -70,6 +71,8 @@ pub struct EmmaReactor<'emma> {
     inner_handle: Handle<Inner>,
     _marker: PhantomData<&'emma Emma>,
 }
+
+unsafe impl Send for EmmaReactor<'_> {}
 
 impl EmmaReactor<'_> {
     pub fn from_emma<'emma>(emma: &'emma Emma) -> EmmaReactor<'emma> {
