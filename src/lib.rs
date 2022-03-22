@@ -53,8 +53,6 @@ pub struct Emma {
     pub(crate) inner: Handle<Inner>, // use UnsafeCell for best performance
 }
 
-unsafe impl Send for Emma {}
-
 struct Inner {
     pub(crate) slab: slab::Slab<EmmaState>,
 }
@@ -71,8 +69,6 @@ pub struct EmmaReactor<'emma> {
     inner_handle: Handle<Inner>,
     _marker: PhantomData<&'emma Emma>,
 }
-
-unsafe impl Send for EmmaReactor<'_> {}
 
 impl EmmaReactor<'_> {
     pub fn from_emma<'emma>(emma: &'emma Emma) -> EmmaReactor<'emma> {

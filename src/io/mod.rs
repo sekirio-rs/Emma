@@ -1,5 +1,8 @@
 //! Traits and something else for asynchronous I/O operations.
 
+pub(crate) mod op;
+pub(crate) mod read;
+
 pub unsafe trait EmmaBuf: Unpin + 'static {
     fn ptr(&self) -> *const u8;
     fn mut_ptr(&mut self) -> *mut u8;
