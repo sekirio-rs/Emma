@@ -16,7 +16,7 @@ fn main() -> io::Result<()> {
 
 async fn task(emma: emma::Emma, mut f: emma::fs::File) -> io::Result<()> {
     let mut buf = [0u8; 1024];
-    let read_fut = f.async_read(&emma, &mut buf).unwrap();
+    let read_fut = f.read(&emma, &mut buf).unwrap();
     let wake_fut = emma::EmmaReactor::from_emma(&emma);
     futures::try_join!(read_fut, wake_fut)
         .map(|_| {

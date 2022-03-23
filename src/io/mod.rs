@@ -3,7 +3,7 @@
 pub(crate) mod op;
 pub(crate) mod read;
 
-pub unsafe trait EmmaBuf: Unpin + 'static {
+pub unsafe trait EmmaBuf: Unpin + 'static + Send {
     fn ptr(&self) -> *const u8;
     fn mut_ptr(&mut self) -> *mut u8;
     fn bytes(&self) -> usize;

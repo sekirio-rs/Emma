@@ -1,13 +1,12 @@
-use crate::Inner as EmmaInner;
-use crate::Handle;
-use crate::Result as EmmaResult;
-use crate::EmmaState;
 use crate::Emma;
-use std::marker::PhantomData;
+use crate::EmmaState;
+use crate::Handle;
+use crate::Inner as EmmaInner;
+use crate::Result;
 use std::future::Future;
+use std::marker::PhantomData;
 use std::pin::Pin;
-use std::task::{Poll, Context};
-
+use std::task::{Context, Poll};
 
 pub(crate) struct Op<'emma, T> {
     /// token in ['EmmaInner::slab']
@@ -17,30 +16,31 @@ pub(crate) struct Op<'emma, T> {
     /// operation data
     data: Option<T>,
     /// make lifecycle
-    _maker: PhantomData<&'emma EmmaInner>
+    _maker: PhantomData<&'emma EmmaInner>,
 }
 
-impl<'emma, T> Op<'emma, T> {
+unsafe impl<T: Send> Send for Op<'_, T> {}
+
+impl<'emma, T: Send> Op<'emma, T> {
     pub fn new(token: usize, emma: &'emma Emma, data: T) -> Op<'emma, T> {
         Op {
             token,
             handle: emma.inner.clone(),
             data: Some(data),
-            _maker: PhantomData
+            _maker: PhantomData,
         }
     }
 }
-
 
 pub(crate) struct Ready<T> {
     /// operation data
     pub(crate) data: T,
     /// io_uring result
-    pub(crate) uring_res: i32
+    pub(crate) uring_res: i32,
 }
 
 impl<T: Unpin> Future for Op<'_, T> {
-    type Output = EmmaResult<Ready<T>>;
+    type Output = Result<Ready<T>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut handle = self.handle.as_ref().borrow_mut();
@@ -58,7 +58,7 @@ impl<T: Unpin> Future for Op<'_, T> {
                 EmmaState::Completed(x) => {
                     _ret = Some(*x);
                 }
-                EmmaState::_Reserved => unimplemented!()
+                EmmaState::_Reserved => unimplemented!(),
             }
 
             if let Some(x) = _ret {
@@ -68,12 +68,11 @@ impl<T: Unpin> Future for Op<'_, T> {
 
                 Poll::Ready(Ok(Ready {
                     data: self.get_mut().data.take().unwrap_unchecked(),
-                    uring_res: x
+                    uring_res: x,
                 }))
             } else {
                 Poll::Pending
             }
         }
-        
     }
 }
