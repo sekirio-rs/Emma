@@ -1,19 +1,13 @@
 //! Implementation of asynchronous file system operation
 //! Based on io_uring
-
-use super::{Emma, EmmaState, Inner as EmmaInner};
-use crate::error::EmmaError;
+use super::Emma;
+use crate::io::op;
 use crate::io::EmmaBuf;
-use crate::Handle;
 use crate::Result;
-use io_uring::{opcode, types};
+use futures::{future::BoxFuture, TryFutureExt};
 use std::fs::File as StdFile;
-use std::future::Future;
-use std::marker::PhantomData;
 use std::os::unix::io::AsRawFd;
-use std::pin::Pin;
 use std::sync::Arc;
-use std::task::{Context, Poll};
 
 pub struct File {
     // todo
@@ -29,80 +23,15 @@ impl File {
         self.std.as_ref()
     }
 
-    pub fn async_read<'emma, T: EmmaBuf>(
+    pub fn read<'emma, T: EmmaBuf>(
         &mut self,
         emma: &'emma Emma,
         buf: &'emma mut T,
-    ) -> Result<EmmaRead<'emma>> {
-        // 1. push sqe to uring submission queue
-        // 2. construct [`EmmaRead`]
+    ) -> Result<BoxFuture<'emma, Result<usize>>> {
+        let fut = op::Op::async_read(self.std.as_raw_fd(), emma, buf)?;
+        let fut = fut.map_ok(|ready| ready.uring_res as usize);
+        let boxed_fut = Box::pin(fut);
 
-        let token = emma.inner.borrow_mut().slab.insert(EmmaState::Submitted);
-        let entry = opcode::Read::new(
-            types::Fd(self.std.as_raw_fd()),
-            buf.mut_ptr(),
-            buf.bytes() as u32,
-        )
-        .build()
-        .user_data(token as _);
-
-        let mut uring = emma.uring.borrow_mut();
-        let mut sq = uring.submission();
-
-        unsafe {
-            if let Err(e) = sq.push(&entry) {
-                return Err(EmmaError::Other(Box::new(e)));
-            }
-        }
-
-        sq.sync(); // sync to true uring submission queue
-
-        Ok(EmmaRead {
-            token,
-            handle: emma.inner.clone(),
-            _marker: PhantomData,
-        })
-    }
-}
-
-pub struct EmmaRead<'emma> {
-    // token in [`EmmaInner::slab`]
-    token: usize,
-    // handle of Emma
-    handle: Handle<EmmaInner>,
-    // maker for lifecycle
-    _marker: PhantomData<&'emma Box<dyn EmmaBuf + Send>>,
-}
-
-unsafe impl Send for EmmaRead<'_> {}
-
-impl<'emma> Future for EmmaRead<'emma> {
-    type Output = Result<usize>;
-
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let mut handle = self.handle.as_ref().borrow_mut();
-        let mut _ret: Option<usize> = None;
-
-        unsafe {
-            let state = handle.slab.get_unchecked_mut(self.token);
-            match state {
-                EmmaState::Submitted => {
-                    *state = EmmaState::InExecution(cx.waker().clone());
-                    return Poll::Pending;
-                }
-                EmmaState::InExecution(_waker) => unreachable!(),
-                EmmaState::Completed(t) => {
-                    _ret = Some(*t as usize);
-                }
-                EmmaState::_Reserved => unimplemented!(),
-            }
-        }
-
-        if let Some(x) = _ret {
-            let _ = handle.slab.remove(self.token); // remove state in slab
-            Poll::Ready(Ok(x))
-        } else {
-            Poll::Pending
-        }
+        Ok(boxed_fut)
     }
 }

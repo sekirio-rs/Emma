@@ -47,16 +47,16 @@ fn bench_emma() -> io::Result<u128> {
         let mut buf8 = [0u8; BUFFER_LEN];
         let mut buf9 = [0u8; BUFFER_LEN];
 
-        let read_fut0 = f0.async_read(&emma, &mut buf0).unwrap();
-        let read_fut1 = f1.async_read(&emma, &mut buf1).unwrap();
-        let read_fut2 = f2.async_read(&emma, &mut buf2).unwrap();
-        let read_fut3 = f3.async_read(&emma, &mut buf3).unwrap();
-        let read_fut4 = f4.async_read(&emma, &mut buf4).unwrap();
-        let read_fut5 = f5.async_read(&emma, &mut buf5).unwrap();
-        let read_fut6 = f6.async_read(&emma, &mut buf6).unwrap();
-        let read_fut7 = f7.async_read(&emma, &mut buf7).unwrap();
-        let read_fut8 = f8.async_read(&emma, &mut buf8).unwrap();
-        let read_fut9 = f9.async_read(&emma, &mut buf9).unwrap();
+        let read_fut0 = f0.read(&emma, &mut buf0).unwrap();
+        let read_fut1 = f1.read(&emma, &mut buf1).unwrap();
+        let read_fut2 = f2.read(&emma, &mut buf2).unwrap();
+        let read_fut3 = f3.read(&emma, &mut buf3).unwrap();
+        let read_fut4 = f4.read(&emma, &mut buf4).unwrap();
+        let read_fut5 = f5.read(&emma, &mut buf5).unwrap();
+        let read_fut6 = f6.read(&emma, &mut buf6).unwrap();
+        let read_fut7 = f7.read(&emma, &mut buf7).unwrap();
+        let read_fut8 = f8.read(&emma, &mut buf8).unwrap();
+        let read_fut9 = f9.read(&emma, &mut buf9).unwrap();
 
         let wake_fut = emma::EmmaReactor::from_emma(&emma);
 
