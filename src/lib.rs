@@ -4,7 +4,9 @@
 pub mod error;
 pub mod fs;
 mod io;
+mod join;
 mod net;
+mod reactor;
 
 use error::EmmaError;
 use io_uring::IoUring;

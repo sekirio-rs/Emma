@@ -32,15 +32,13 @@ impl<'emma, T: Send> Op<'emma, T> {
     }
 }
 
-pub(crate) struct Ready<T> {
-    /// operation data
-    pub(crate) data: T,
+pub(crate) struct Ready {
     /// io_uring result
     pub(crate) uring_res: i32,
 }
 
 impl<T: Unpin> Future for Op<'_, T> {
-    type Output = Result<Ready<T>>;
+    type Output = Result<Ready>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut handle = self.handle.as_ref().borrow_mut();
@@ -66,10 +64,7 @@ impl<T: Unpin> Future for Op<'_, T> {
 
                 drop(handle);
 
-                Poll::Ready(Ok(Ready {
-                    data: self.get_mut().data.take().unwrap_unchecked(),
-                    uring_res: x,
-                }))
+                Poll::Ready(Ok(Ready { uring_res: x }))
             } else {
                 Poll::Pending
             }

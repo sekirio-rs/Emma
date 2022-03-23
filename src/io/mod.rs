@@ -44,3 +44,12 @@ unsafe impl<const N: usize> EmmaBuf for [u8; N] {
         self.len()
     }
 }
+
+use std::pin::Pin;
+use std::task::Poll;
+
+pub(crate) trait EmmaFuture {
+    type Output;
+    fn __poll(self: Pin<&mut Self>) -> Poll<Self::Output>;
+    fn __token(&self) -> usize;
+}
