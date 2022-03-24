@@ -21,12 +21,12 @@ pub struct Join<'emma> {
 }
 
 impl<'emma> Join<'emma> {
-    pub fn new(reactor: Reactor<'emma>) -> Join<'emma> {
-        Self {
+    pub fn new(reactor: Reactor<'emma>) -> Pin<Box<Join<'emma>>> {
+        Box::pin(Self {
             futures: HashMap::new(),
             reactor,
             result: HashMap::new(),
-        }
+        })
     }
 
     pub fn join(mut self: Pin<&mut Self>, other: PinnedEmmaFuture<'emma>) -> Pin<&mut Self> {
