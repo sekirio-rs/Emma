@@ -1,21 +1,18 @@
 //! Implementation of Emma' s Reactor
-use crate::io::op::Ready;
-use crate::io::EmmaFuture;
 use crate::{Emma, EmmaError, Handle, Inner as EmmaInner};
 use crate::{EmmaState, Result};
 use io_uring::IoUring;
-use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::pin::Pin;
 
-pub(crate) struct Reactor<'emma> {
+pub struct Reactor<'emma> {
     uring_handle: Handle<IoUring>,
     inner_handle: Handle<EmmaInner>,
     _maker: PhantomData<&'emma Emma>,
 }
 
 impl Reactor<'_> {
-    pub(crate) fn new<'emma>(emma: &'emma Emma) -> Reactor<'emma> {
+    pub fn new<'emma>(emma: &'emma Emma) -> Reactor<'emma> {
         Reactor {
             uring_handle: emma.uring.clone(),
             inner_handle: emma.inner.clone(),
@@ -55,7 +52,7 @@ impl Reactor<'_> {
                 let state = inner.slab.get_unchecked_mut(token);
 
                 match state {
-                    EmmaState::Submitted | EmmaState::InExecution(_) => {
+                    EmmaState::Submitted | EmmaState::InExecution => {
                         wake_tokens.push(token);
                         *state = EmmaState::Completed(ret);
                     }

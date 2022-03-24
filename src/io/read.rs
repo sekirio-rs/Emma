@@ -6,7 +6,7 @@ use crate::{Emma, EmmaState};
 use io_uring::{opcode, types};
 use std::os::unix::io::RawFd;
 
-pub(crate) struct Read<'read, T> {
+pub struct Read<'read, T> {
     /// currently raw fd
     fd: RawFd,
     /// buf reference

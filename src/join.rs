@@ -7,16 +7,31 @@ use crate::Result;
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
-use std::task::{Context, Poll, Waker};
+use std::task::{Context, Poll};
 
 type JoinedFutures<'a> =
     HashMap<usize, Pin<Box<dyn EmmaFuture<Output = Result<Ready>> + Unpin + 'a>>>;
 type JoinedReady = HashMap<usize, Result<Ready>>;
+type PinnedEmmaFuture<'a> = Pin<Box<dyn EmmaFuture<Output = Result<Ready>> + Unpin + 'a>>;
 
-pub(crate) struct Join<'emma> {
+pub struct Join<'emma> {
     futures: JoinedFutures<'emma>,
     reactor: Reactor<'emma>,
     result: JoinedReady,
+}
+
+impl<'emma> Join<'emma> {
+    pub fn new(reactor: Reactor<'emma>) -> Join<'emma> {
+        Self {
+            futures: HashMap::new(),
+            reactor,
+            result: HashMap::new(),
+        }
+    }
+
+    pub fn join(mut self: Pin<&mut Self>, other: PinnedEmmaFuture<'emma>) {
+        self.futures.insert(other.as_ref().__token(), other);
+    }
 }
 
 impl Future for Join<'_> {
