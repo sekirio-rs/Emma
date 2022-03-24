@@ -20,7 +20,7 @@ async fn task(emma: emma::Emma, mut f: emma::fs::File) -> io::Result<()> {
     let reactor = emma::reactor::Reactor::new(&emma);
     let mut join_fut = Box::pin(emma::join::Join::new(reactor));
 
-    join_fut.as_mut().join(read_fut);
+    let _ = join_fut.as_mut().join(read_fut);
 
     let _ = join_fut.await.map_err(|e| e.as_io_error())?;
 

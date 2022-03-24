@@ -29,8 +29,9 @@ impl<'emma> Join<'emma> {
         }
     }
 
-    pub fn join(mut self: Pin<&mut Self>, other: PinnedEmmaFuture<'emma>) {
+    pub fn join(mut self: Pin<&mut Self>, other: PinnedEmmaFuture<'emma>) -> Pin<&mut Self> {
         self.futures.insert(other.as_ref().__token(), other);
+        self
     }
 }
 
