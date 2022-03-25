@@ -16,9 +16,10 @@ fn main() -> io::Result<()> {
 
 async fn task(emma: emma::Emma, mut f: emma::fs::File) -> io::Result<()> {
     let mut buf = [0u8; 1024];
+    // let mut buf = vec![0u8; 1024].into_boxed_slice();
     let read_fut = f.read(&emma, &mut buf).map_err(|e| e.as_io_error())?;
-    let reactor = emma::reactor::Reactor::new(&emma);
-    let mut join_fut = emma::join::Join::new(reactor);
+    let reactor = emma::Reactor::new(&emma);
+    let mut join_fut = emma::Join::new(reactor);
 
     let _ = join_fut.as_mut().join(read_fut);
 

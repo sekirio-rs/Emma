@@ -19,8 +19,6 @@ pub struct Op<'emma, T> {
     _maker: PhantomData<&'emma EmmaInner>,
 }
 
-unsafe impl<T: Send> Send for Op<'_, T> {}
-
 impl<'emma, T: Send> Op<'emma, T> {
     pub fn new(token: usize, emma: &'emma Emma, data: T) -> Op<'emma, T> {
         Op {

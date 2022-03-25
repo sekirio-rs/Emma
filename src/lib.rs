@@ -1,17 +1,23 @@
 //! Asynchronous I/O library based on io_uring.
 
 #![allow(non_snake_case)]
+pub mod driver;
 pub mod error;
 pub mod fs;
+pub mod futures;
 pub mod io;
-pub mod join;
 mod net;
-pub mod reactor;
 use error::EmmaError;
 use io_uring::IoUring;
 use std::cell;
 use std::rc::Rc;
 use std::result::Result as StdResult;
+
+pub use driver::Reactor;
+pub use futures::join::Join;
+
+// RefCell for error message
+// UnsafeCell for best performance
 type Handle<T> = Rc<cell::RefCell<T>>;
 type Result<T> = StdResult<T, error::EmmaError>;
 
@@ -45,18 +51,27 @@ impl Builder {
     }
 }
 
+/// Structure which holds the io_uring instance
+/// and states of submission provided by user.
+///
+/// Designed as Send + !Sync
 pub struct Emma {
     pub(crate) uring: Handle<IoUring>,
-    pub(crate) inner: Handle<Inner>, // use UnsafeCell for best performance
+    pub(crate) inner: Handle<Inner>,
 }
 
+/// Inner for [`Emma`], and will be shared with [`Op`]
+/// in the same thread.
 struct Inner {
     pub(crate) slab: slab::Slab<EmmaState>,
 }
 
 pub(crate) enum EmmaState {
+    /// Operation has been submitted to io_uring
     Submitted,
+    /// Waiting for kernel to complete the submission
     InExecution,
+    /// Submission has been completed
     Completed(i32),
     _Reserved,
 }
