@@ -16,11 +16,14 @@ fn main() -> io::Result<()> {
 
 async fn task(emma: emma::Emma, mut f: emma::fs::File) -> io::Result<()> {
     let mut buf = [0u8; 1024];
-    let read_fut = f.read(&emma, &mut buf).unwrap();
-    let wake_fut = emma::EmmaReactor::from_emma(&emma);
-    futures::try_join!(read_fut, wake_fut)
-        .map(|_| {
-            println!("{}", String::from_utf8_lossy(&buf));
-        })
-        .map_err(|e| e.as_io_error())
+    let read_fut = f.read(&emma, &mut buf).map_err(|e| e.as_io_error())?;
+    let reactor = emma::reactor::Reactor::new(&emma);
+    let mut join_fut = emma::join::Join::new(reactor);
+
+    let _ = join_fut.as_mut().join(read_fut);
+
+    let _ = join_fut.await.map_err(|e| e.as_io_error())?;
+
+    println!("{}", String::from_utf8_lossy(&buf));
+    Ok(())
 }

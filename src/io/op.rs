@@ -1,14 +1,14 @@
+use crate::io::EmmaFuture;
 use crate::Emma;
 use crate::EmmaState;
 use crate::Handle;
 use crate::Inner as EmmaInner;
 use crate::Result;
-use std::future::Future;
 use std::marker::PhantomData;
 use std::pin::Pin;
-use std::task::{Context, Poll};
+use std::task::Poll;
 
-pub(crate) struct Op<'emma, T> {
+pub struct Op<'emma, T> {
     /// token in ['EmmaInner::slab']
     token: usize,
     /// handle of Emma
@@ -32,17 +32,15 @@ impl<'emma, T: Send> Op<'emma, T> {
     }
 }
 
-pub(crate) struct Ready<T> {
-    /// operation data
-    pub(crate) data: T,
+pub struct Ready {
     /// io_uring result
     pub(crate) uring_res: i32,
 }
 
-impl<T: Unpin> Future for Op<'_, T> {
-    type Output = Result<Ready<T>>;
+impl<T: Unpin> EmmaFuture for Op<'_, T> {
+    type Output = Result<Ready>;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+    fn __poll(self: Pin<&mut Self>) -> Poll<Self::Output> {
         let mut handle = self.handle.as_ref().borrow_mut();
         let mut _ret: Option<i32> = None;
 
@@ -51,28 +49,27 @@ impl<T: Unpin> Future for Op<'_, T> {
 
             match state {
                 EmmaState::Submitted => {
-                    *state = EmmaState::InExecution(cx.waker().clone());
+                    *state = EmmaState::InExecution;
                     return Poll::Pending;
                 }
-                EmmaState::InExecution(_waker) => unreachable!(),
+                EmmaState::InExecution => unreachable!(),
                 EmmaState::Completed(x) => {
                     _ret = Some(*x);
                 }
                 EmmaState::_Reserved => unimplemented!(),
             }
-
-            if let Some(x) = _ret {
-                let _ = handle.slab.remove(self.token);
-
-                drop(handle);
-
-                Poll::Ready(Ok(Ready {
-                    data: self.get_mut().data.take().unwrap_unchecked(),
-                    uring_res: x,
-                }))
-            } else {
-                Poll::Pending
-            }
         }
+
+        if let Some(x) = _ret {
+            let _ = handle.slab.remove(self.token);
+
+            Poll::Ready(Ok(Ready { uring_res: x }))
+        } else {
+            Poll::Pending
+        }
+    }
+
+    fn __token(self: Pin<&Self>) -> usize {
+        self.token
     }
 }
