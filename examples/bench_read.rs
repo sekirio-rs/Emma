@@ -1,5 +1,4 @@
 use emma::fs::File as EmmaFile;
-use std::cell::{RefCell, RefMut};
 use std::fs::File as StdFile;
 use std::io;
 use std::time;
@@ -38,9 +37,9 @@ fn bench_emma() -> io::Result<u128> {
 
         let read_futs = emma::fs::File::multi_read(&mut files, &emma, &mut bufs).unwrap();
 
-        let reactor = emma::reactor::Reactor::new(&emma);
+        let reactor = emma::Reactor::new(&emma);
 
-        let mut joinned_fut = emma::join::Join::new(reactor);
+        let mut joinned_fut = emma::Join::new(reactor);
 
         read_futs.into_iter().for_each(|fut| {
             joinned_fut.as_mut().join(fut);

@@ -1,8 +1,8 @@
 //! JoinFuture
 
+use crate::driver::{Reactor, WakeState};
 use crate::io::op::Ready;
 use crate::io::EmmaFuture;
-use crate::reactor::{Reactor, WakeState};
 use crate::Result;
 use std::collections::HashMap;
 use std::future::Future;
