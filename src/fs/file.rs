@@ -1,6 +1,6 @@
-use crate::Emma;
 use crate::io::EmmaBuf;
 use crate::io::{op, read};
+use crate::Emma;
 use crate::Result;
 use std::fs::File as StdFile;
 use std::os::unix::io::AsRawFd;
