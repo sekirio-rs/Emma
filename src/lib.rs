@@ -4,7 +4,7 @@
 pub mod driver;
 pub mod error;
 pub mod fs;
-pub mod futures;
+mod futures;
 pub mod io;
 mod net;
 use error::EmmaError;
