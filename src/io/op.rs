@@ -1,3 +1,4 @@
+use crate::error::EmmaError;
 use crate::io::EmmaFuture;
 use crate::Emma;
 use crate::EmmaState;
@@ -20,13 +21,45 @@ pub struct Op<'emma, T> {
 }
 
 impl<'emma, T: Send> Op<'emma, T> {
-    pub fn new(token: usize, emma: &'emma Emma, data: T) -> Op<'emma, T> {
+    pub(crate) fn new(token: usize, emma: &'emma Emma, data: T) -> Op<'emma, T> {
         Op {
             token,
             handle: emma.inner.clone(),
             data: Some(data),
             _maker: PhantomData,
         }
+    }
+
+    pub(crate) fn async_op(
+        emma: &'emma Emma,
+        func: impl FnOnce(usize) -> (io_uring::squeue::Entry, T),
+    ) -> Result<Op<'emma, T>> {
+        // 1. alloc token in [`EmmaInner::slab`]
+        // 2. construct [`io_uring::squeue::Entry`] sqe
+        // 3. submit to io_uring with sqe
+        // 4. construct [`Op<'_, T>`] and return
+
+        let token = emma.inner.borrow_mut().slab.insert(EmmaState::Submitted);
+
+        let (entry, data) = func(token);
+
+        let mut uring = emma.uring.borrow_mut();
+
+        if uring.submission().is_full() {
+            uring.submit().map_err(|e| EmmaError::IoError(e))?; // flush to kernel
+        }
+
+        let mut sq = uring.submission();
+
+        unsafe {
+            if let Err(e) = sq.push(&entry) {
+                return Err(EmmaError::Other(Box::new(e)));
+            }
+        }
+
+        sq.sync(); // sync to true uring submission queue
+
+        Ok(Op::new(token, emma, data))
     }
 }
 
