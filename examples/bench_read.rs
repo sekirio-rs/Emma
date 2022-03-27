@@ -1,5 +1,4 @@
 use emma::fs::File as EmmaFile;
-use std::fs::File as StdFile;
 use std::io;
 use std::time;
 use tokio::fs::File as TokioFile;
@@ -19,6 +18,40 @@ fn main() -> io::Result<()> {
 }
 
 fn bench_emma() -> io::Result<u128> {
+    async fn open_files(emma: &emma::Emma) -> io::Result<Vec<EmmaFile>> {
+        use emma::io::EmmaFuture;
+
+        let reactor = emma::Reactor::new(&emma);
+        let mut join_fut = emma::Join::new(reactor);
+
+        let mut open_futs = Vec::new();
+
+        for _ in 0..BENCH_SIZE {
+            let fut = EmmaFile::open(emma, PATH).map_err(|e| e.as_io_error())?;
+            open_futs.push(fut);
+        }
+
+        let tokens = open_futs
+            .iter()
+            .map(|fut| fut.as_ref().__token())
+            .collect::<Vec<_>>();
+
+        for fut in open_futs {
+            join_fut.as_mut().join(fut);
+        }
+
+        join_fut
+            .await
+            .map(|mut ret| {
+                tokens
+                    .iter()
+                    .map(|token| ret.remove(token).unwrap().unwrap().uring_res as _)
+                    .map(|fd| EmmaFile::fram_raw_fd(fd))
+                    .collect::<Vec<_>>()
+            })
+            .map_err(|e| e.as_io_error())
+    }
+
     let start = time::Instant::now();
 
     let rt = tokio::runtime::Builder::new_current_thread().build()?;
@@ -26,10 +59,8 @@ fn bench_emma() -> io::Result<u128> {
     let _ = rt.block_on(async move {
         let emma = emma::Builder::new().build().unwrap();
 
-        let mut files = (0..BENCH_SIZE)
-            .into_iter()
-            .map(|_| EmmaFile::from_std(StdFile::open(PATH).unwrap()))
-            .collect::<Vec<EmmaFile>>();
+        let mut files = open_files(&emma).await?;
+
         let mut bufs = (0..BENCH_SIZE)
             .into_iter()
             .map(|_| [0u8; BUFFER_LEN])

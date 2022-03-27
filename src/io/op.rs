@@ -65,7 +65,7 @@ impl<'emma, T: Send> Op<'emma, T> {
 
 pub struct Ready {
     /// io_uring result
-    pub(crate) uring_res: i32,
+    pub uring_res: i32,
 }
 
 impl<T: Unpin> EmmaFuture for Op<'_, T> {
