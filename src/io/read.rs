@@ -31,6 +31,11 @@ impl<'read, 'emma, T: EmmaBuf> Op<'emma, Read<'read, T>> {
             .user_data(token as _);
 
         let mut uring = emma.uring.borrow_mut();
+
+        if uring.submission().is_full() {
+            uring.submit().map_err(|e| EmmaError::IoError(e))?; // flush to kernel
+        }
+
         let mut sq = uring.submission();
 
         unsafe {

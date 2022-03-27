@@ -1,4 +1,4 @@
-//! Implementation of Emma' s Reactor
+//! Event Driver
 use crate::{Emma, EmmaError, Handle, Inner as EmmaInner};
 use crate::{EmmaState, Result};
 use io_uring::IoUring;
