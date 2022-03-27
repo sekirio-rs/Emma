@@ -1,7 +1,6 @@
 use super::op::Op;
 use crate::Emma;
 use crate::EmmaError;
-use crate::EmmaState;
 use crate::Result;
 use bitflags::bitflags;
 use io_uring::{opcode, types};
@@ -36,34 +35,16 @@ impl<'emma> Op<'emma, Open> {
         path: P,
         flags: libc::c_int,
     ) -> Result<Op<'emma, Open>> {
-        let token = emma.inner.borrow_mut().slab.insert(EmmaState::Submitted);
-
         let path = CString::new(path.as_ref().as_os_str().as_bytes())
             .map_err(|e| EmmaError::Other(Box::new(e)))?;
 
-        let entry = opcode::OpenAt::new(types::Fd(libc::AT_FDCWD), path.as_c_str().as_ptr())
-            .flags(flags)
-            .build()
-            .user_data(token as _);
+        Op::async_op(emma, move |token| {
+            let entry = opcode::OpenAt::new(types::Fd(libc::AT_FDCWD), path.as_c_str().as_ptr())
+                .flags(flags)
+                .build()
+                .user_data(token as _);
 
-        let mut uring = emma.uring.borrow_mut();
-
-        if uring.submission().is_full() {
-            uring.submit().map_err(|e| EmmaError::IoError(e))?; // flush to kernel
-        }
-
-        let mut sq = uring.submission();
-
-        unsafe {
-            if let Err(e) = sq.push(&entry) {
-                return Err(EmmaError::Other(Box::new(e)));
-            }
-        }
-
-        sq.sync(); // sync to true uring submission queue
-
-        let data = Open { dirfd: None, path };
-
-        Ok(Op::new(token, emma, data))
+            (entry, Open { dirfd: None, path })
+        })
     }
 }
