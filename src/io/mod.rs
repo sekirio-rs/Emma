@@ -2,6 +2,7 @@
 pub(crate) mod op;
 pub(crate) mod open;
 pub(crate) mod read;
+pub(crate) mod write;
 
 use std::pin::Pin;
 
