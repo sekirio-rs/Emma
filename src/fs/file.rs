@@ -27,13 +27,12 @@ impl File {
         path: P,
     ) -> Result<Pin<Box<dyn EmmaFuture<Output = Result<Self>> + 'emma + Unpin>>> {
         let fut = op::Op::async_open(emma, path, OpenFlags::READ_ONLY.bits())?;
-        let f = |ret: Result<Ready>| {
+        let fut = Map::new(fut, |ret: Result<Ready>| {
             ret.map(|ready| {
                 let fd = ready.uring_res as _;
                 Self::fram_raw_fd(fd)
             })
-        };
-        let fut = Map::new(fut, f);
+        });
 
         Ok(Box::pin(fut))
     }
