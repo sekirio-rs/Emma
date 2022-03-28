@@ -4,7 +4,6 @@ pub(crate) mod open;
 pub(crate) mod read;
 
 use std::pin::Pin;
-use std::task::Poll;
 
 // todo: use macro
 pub unsafe trait EmmaBuf: Unpin + 'static + Send {
@@ -37,9 +36,14 @@ unsafe impl<const N: usize> EmmaBuf for [u8; N] {
     }
 }
 
+pub enum _Poll<T> {
+    Ready(T),
+    Pending(Option<usize>),
+}
+
 /// [`EmmaFuture`] for non-waker-poll design
 pub trait EmmaFuture {
     type Output;
-    fn __poll(self: Pin<&mut Self>) -> Poll<Self::Output>;
+    fn __poll(self: Pin<&mut Self>) -> _Poll<Self::Output>;
     fn __token(self: Pin<&Self>) -> usize;
 }

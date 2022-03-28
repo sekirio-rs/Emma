@@ -2,7 +2,7 @@
 
 use crate::driver::{Reactor, WakeState};
 use crate::io::op::Ready;
-use crate::io::EmmaFuture;
+use crate::io::{EmmaFuture, _Poll};
 use crate::Result;
 use std::collections::HashMap;
 use std::future::Future;
@@ -48,11 +48,16 @@ impl Future for Join<'_> {
                         for token in tokens {
                             let pinned_fut = self.futures.get_mut(&token).unwrap().as_mut();
                             match pinned_fut.__poll() {
-                                Poll::Ready(ret) => {
+                                _Poll::Ready(ret) => {
                                     self.result.insert(token, ret);
                                     self.futures.remove(&token); // task finished, drop
                                 }
-                                Poll::Pending => {}
+                                _Poll::Pending(t) => {
+                                    if let Some(new_token) = t {
+                                        let future = self.futures.remove(&token).unwrap();
+                                        self.futures.insert(new_token, future);
+                                    }
+                                }
                             }
                         }
                     }
