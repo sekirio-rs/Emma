@@ -1,5 +1,5 @@
 use crate::error::EmmaError;
-use crate::io::EmmaFuture;
+use crate::io::{EmmaFuture, _Poll};
 use crate::Emma;
 use crate::EmmaState;
 use crate::Handle;
@@ -7,7 +7,6 @@ use crate::Inner as EmmaInner;
 use crate::Result;
 use std::marker::PhantomData;
 use std::pin::Pin;
-use std::task::Poll;
 
 pub struct Op<'emma, T> {
     /// token in ['EmmaInner::slab']
@@ -71,7 +70,7 @@ pub struct Ready {
 impl<T: Unpin> EmmaFuture for Op<'_, T> {
     type Output = Result<Ready>;
 
-    fn __poll(self: Pin<&mut Self>) -> Poll<Self::Output> {
+    fn __poll(self: Pin<&mut Self>) -> _Poll<Self::Output> {
         let mut handle = self.handle.as_ref().borrow_mut();
         let mut _ret: Option<i32> = None;
 
@@ -81,7 +80,7 @@ impl<T: Unpin> EmmaFuture for Op<'_, T> {
             match state {
                 EmmaState::Submitted => {
                     *state = EmmaState::InExecution;
-                    return Poll::Pending;
+                    return _Poll::Pending(None);
                 }
                 EmmaState::InExecution => unreachable!(),
                 EmmaState::Completed(x) => {
@@ -94,9 +93,9 @@ impl<T: Unpin> EmmaFuture for Op<'_, T> {
         if let Some(x) = _ret {
             let _ = handle.slab.remove(self.token);
 
-            Poll::Ready(Ok(Ready { uring_res: x }))
+            _Poll::Ready(Ok(Ready { uring_res: x }))
         } else {
-            Poll::Pending
+            _Poll::Pending(None)
         }
     }
 

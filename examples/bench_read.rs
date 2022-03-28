@@ -19,8 +19,6 @@ fn main() -> io::Result<()> {
 
 fn bench_emma() -> io::Result<u128> {
     async fn open_files(emma: &emma::Emma) -> io::Result<Vec<EmmaFile>> {
-        use emma::io::EmmaFuture;
-
         let reactor = emma::Reactor::new(&emma);
         let mut join_fut = emma::Join::new(reactor);
 
@@ -45,8 +43,7 @@ fn bench_emma() -> io::Result<u128> {
             .map(|mut ret| {
                 tokens
                     .iter()
-                    .map(|token| ret.remove(token).unwrap().unwrap().uring_res as _)
-                    .map(|fd| EmmaFile::fram_raw_fd(fd))
+                    .map(|token| ret.remove(token).unwrap().unwrap())
                     .collect::<Vec<_>>()
             })
             .map_err(|e| e.as_io_error())

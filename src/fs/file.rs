@@ -1,7 +1,9 @@
+use crate::futures::map::Map;
 use crate::io::EmmaBuf;
+use crate::io::EmmaFuture;
 use crate::io::{
-    op,
-    open::{self, OpenFlags},
+    op::{self, Ready},
+    open::OpenFlags,
     read,
 };
 use crate::Emma;
@@ -23,8 +25,15 @@ impl File {
     pub fn open<'emma, P: AsRef<Path>>(
         emma: &'emma Emma,
         path: P,
-    ) -> Result<Pin<Box<op::Op<'emma, open::Open>>>> {
+    ) -> Result<Pin<Box<dyn EmmaFuture<Output = Result<Self>> + 'emma + Unpin>>> {
         let fut = op::Op::async_open(emma, path, OpenFlags::READ_ONLY.bits())?;
+        let f = |ret: Result<Ready>| {
+            ret.map(|ready| {
+                let fd = ready.uring_res as _;
+                Self::fram_raw_fd(fd)
+            })
+        };
+        let fut = Map::new(fut, f);
 
         Ok(Box::pin(fut))
     }
