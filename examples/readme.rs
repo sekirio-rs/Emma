@@ -1,7 +1,5 @@
 use emma::fs::File as EmmaFile;
-use emma::io::EmmaFuture;
 use std::io;
-use std::os::unix::io::RawFd;
 
 fn main() -> io::Result<()> {
     let rt = tokio::runtime::Builder::new_current_thread()

@@ -4,7 +4,7 @@ use crate::io::EmmaFuture;
 use crate::io::{
     op::{self, Ready},
     open::OpenFlags,
-    read,
+    read, write,
 };
 use crate::Emma;
 use crate::Result;
@@ -26,7 +26,22 @@ impl File {
         emma: &'emma Emma,
         path: P,
     ) -> Result<Pin<Box<dyn EmmaFuture<Output = Result<Self>> + 'emma + Unpin>>> {
-        let fut = op::Op::async_open(emma, path, OpenFlags::READ_ONLY.bits())?;
+        Self::open_inner(emma, path, OpenFlags::READ_ONLY)
+    }
+
+    pub fn create<'emma, P: AsRef<Path>>(
+        emma: &'emma Emma,
+        path: P,
+    ) -> Result<Pin<Box<dyn EmmaFuture<Output = Result<Self>> + 'emma + Unpin>>> {
+        Self::open_inner(emma, path, OpenFlags::WRITE_ONLY | OpenFlags::CREAT_TRUNC)
+    }
+
+    fn open_inner<'emma, P: AsRef<Path>>(
+        emma: &'emma Emma,
+        path: P,
+        flags: OpenFlags,
+    ) -> Result<Pin<Box<dyn EmmaFuture<Output = Result<Self>> + 'emma + Unpin>>> {
+        let fut = op::Op::async_open(emma, path, flags)?;
         let fut = Map::new(fut, |ret: Result<Ready>| {
             ret.map(|ready| {
                 let fd = ready.uring_res as _;
@@ -64,5 +79,16 @@ impl File {
         }
 
         Ok(futs)
+    }
+
+    pub fn write<'emma, T: EmmaBuf + Sync>(
+        &'emma mut self,
+        emma: &'emma Emma,
+        buf: &'emma T,
+    ) -> Result<Pin<Box<op::Op<'emma, write::Write<'emma, T>>>>> {
+        let fut = op::Op::async_write(self.fd, emma, buf)?;
+        let boxed_fut = Box::pin(fut);
+
+        Ok(boxed_fut)
     }
 }

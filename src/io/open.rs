@@ -30,17 +30,17 @@ bitflags! {
 }
 
 impl<'emma> Op<'emma, Open> {
-    pub fn async_open<P: AsRef<Path>>(
+    pub(crate) fn async_open<P: AsRef<Path>>(
         emma: &'emma Emma,
         path: P,
-        flags: libc::c_int,
+        flags: OpenFlags,
     ) -> Result<Op<'emma, Open>> {
         let path = CString::new(path.as_ref().as_os_str().as_bytes())
             .map_err(|e| EmmaError::Other(Box::new(e)))?;
 
         Op::async_op(emma, move |token| {
             let entry = opcode::OpenAt::new(types::Fd(libc::AT_FDCWD), path.as_c_str().as_ptr())
-                .flags(flags)
+                .flags(flags.bits() as _)
                 .build()
                 .user_data(token as _);
 
