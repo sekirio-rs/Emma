@@ -1,7 +1,6 @@
 //! JoinFuture
 
 use crate::driver::{Reactor, WakeState};
-use crate::io::op::Ready;
 use crate::io::{EmmaFuture, _Poll};
 use crate::Result;
 use std::collections::HashMap;
@@ -9,19 +8,18 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-type JoinedFutures<'a> =
-    HashMap<usize, Pin<Box<dyn EmmaFuture<Output = Result<Ready>> + Unpin + 'a>>>;
-type JoinedReady = HashMap<usize, Result<Ready>>;
-type PinnedEmmaFuture<'a> = Pin<Box<dyn EmmaFuture<Output = Result<Ready>> + Unpin + 'a>>;
+type JoinedFutures<'a, T> = HashMap<usize, Pin<Box<dyn EmmaFuture<Output = T> + Unpin + 'a>>>;
+type JoinedReady<T> = HashMap<usize, T>;
+type PinnedEmmaFuture<'a, T> = Pin<Box<dyn EmmaFuture<Output = T> + Unpin + 'a>>;
 
-pub struct Join<'emma> {
-    futures: JoinedFutures<'emma>,
+pub struct Join<'emma, T> {
+    futures: JoinedFutures<'emma, T>,
     reactor: Reactor<'emma>,
-    result: JoinedReady,
+    result: JoinedReady<T>,
 }
 
-impl<'emma> Join<'emma> {
-    pub fn new(reactor: Reactor<'emma>) -> Pin<Box<Join<'emma>>> {
+impl<'emma, T: Unpin> Join<'emma, T> {
+    pub fn new(reactor: Reactor<'emma>) -> Pin<Box<Join<'emma, T>>> {
         Box::pin(Self {
             futures: HashMap::new(),
             reactor,
@@ -29,14 +27,14 @@ impl<'emma> Join<'emma> {
         })
     }
 
-    pub fn join(mut self: Pin<&mut Self>, other: PinnedEmmaFuture<'emma>) -> Pin<&mut Self> {
+    pub fn join(mut self: Pin<&mut Self>, other: PinnedEmmaFuture<'emma, T>) -> Pin<&mut Self> {
         self.futures.insert(other.as_ref().__token(), other);
         self
     }
 }
 
-impl Future for Join<'_> {
-    type Output = Result<JoinedReady>;
+impl<T: Unpin> Future for Join<'_, T> {
+    type Output = Result<JoinedReady<T>>;
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let reactor = Pin::new(&mut self.reactor);
         match reactor.wake() {
