@@ -40,7 +40,7 @@ impl<'emma> Op<'emma, Open> {
 
         Op::async_op(emma, move |token| {
             let entry = opcode::OpenAt::new(types::Fd(libc::AT_FDCWD), path.as_c_str().as_ptr())
-                .flags(flags.bits() as _)
+                .flags(libc::O_CLOEXEC as i32 | flags.bits())
                 .build()
                 .user_data(token as _);
 
