@@ -44,6 +44,7 @@ impl Reactor<'_> {
             let ret = cqe.result();
             let token = cqe.user_data() as usize;
 
+            // todo
             if ret < 0 {
                 return Err(EmmaError::IoError(std::io::Error::from_raw_os_error(-ret)));
             }

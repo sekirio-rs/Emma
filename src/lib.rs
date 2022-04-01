@@ -6,7 +6,7 @@ pub mod error;
 pub mod fs;
 mod futures;
 pub mod io;
-mod net;
+pub mod net;
 use error::EmmaError;
 use io_uring::IoUring;
 use std::cell;
