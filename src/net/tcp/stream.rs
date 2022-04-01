@@ -1,5 +1,5 @@
 use crate::io::EmmaBuf;
-use crate::io::{op, recv};
+use crate::io::{op, recv, send};
 use crate::Emma;
 use crate::Result;
 use std::net;
@@ -24,6 +24,16 @@ impl TcpStream {
         buf: &'emma mut T,
     ) -> Result<Pin<Box<op::Op<'emma, recv::Recv<'emma, T>>>>> {
         let fut = op::Op::async_recv(self.inner.as_raw_fd(), emma, buf)?;
+
+        Ok(Box::pin(fut))
+    }
+
+    pub fn send<'emma, T: EmmaBuf + Sync>(
+        &'emma self,
+        emma: &'emma Emma,
+        buf: &'emma T,
+    ) -> Result<Pin<Box<op::Op<'emma, send::Send_<'emma, T>>>>> {
+        let fut = op::Op::async_send(self.inner.as_raw_fd(), emma, buf)?;
 
         Ok(Box::pin(fut))
     }
