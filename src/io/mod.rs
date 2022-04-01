@@ -3,6 +3,8 @@ pub(crate) mod accept;
 pub(crate) mod op;
 pub(crate) mod open;
 pub(crate) mod read;
+pub(crate) mod recv;
+pub(crate) mod send;
 pub(crate) mod write;
 
 use std::pin::Pin;
