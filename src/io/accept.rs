@@ -1,5 +1,4 @@
 use super::op::Op;
-use super::EmmaBuf;
 use crate::Emma;
 use crate::Result;
 use io_uring::{opcode, types};
@@ -29,7 +28,8 @@ impl<'emma> Op<'emma, Accept> {
                 accept.addr.as_mut_ptr() as *mut _,
                 &mut accept.addr_len,
             )
-            .build();
+            .build()
+            .user_data(token as _);
 
             (entry, accept)
         })
