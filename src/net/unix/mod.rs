@@ -23,8 +23,7 @@ pub(crate) fn new_socket(addr: net::SocketAddr) -> Result<libc::c_int> {
         net::SocketAddr::V6(_) => libc::AF_INET6,
     };
 
-    let type_ = libc::SOCK_STREAM;
-    let type_ = type_ | libc::SOCK_NONBLOCK | libc::SOCK_CLOEXEC;
+    let type_ = libc::SOCK_STREAM | libc::SOCK_CLOEXEC;
 
     let socket = syscall!(socket(domain, type_, 0))?;
 

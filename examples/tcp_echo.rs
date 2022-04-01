@@ -12,7 +12,6 @@ fn main() -> io::Result<()> {
         let emma = emma::Builder::new().build().unwrap();
 
         let listener = TcpListener::bind("127.0.0.1:3344").unwrap();
-        println!("binded");
 
         let accept_fut = listener.accept(&emma).unwrap();
         let token = accept_fut.as_ref().__token();
