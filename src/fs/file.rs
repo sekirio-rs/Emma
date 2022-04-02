@@ -1,4 +1,4 @@
-use crate::futures::map::Map;
+use crate::futures::map::IMap;
 use crate::io::EmmaBuf;
 use crate::io::EmmaFuture;
 use crate::io::{
@@ -42,7 +42,7 @@ impl File {
         flags: OpenFlags,
     ) -> Result<Pin<Box<dyn EmmaFuture<Output = Result<Self>> + 'emma + Unpin>>> {
         let fut = op::Op::async_open(emma, path, flags)?;
-        let fut = Map::new(fut, |ret: Result<Ready>| {
+        let fut = fut.map(|ret: Result<Ready>| {
             ret.map(|ready| {
                 let fd = ready.uring_res as _;
                 Self::fram_raw_fd(fd)

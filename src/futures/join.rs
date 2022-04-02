@@ -63,6 +63,7 @@ impl<T: Unpin> Future for Join<'_, T> {
             }
         }
 
+        // wake itself
         cx.waker().clone().wake();
 
         Poll::Pending

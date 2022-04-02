@@ -36,3 +36,15 @@ where
         self.future.as_ref().__token()
     }
 }
+
+pub trait IMap {
+    type Fut: EmmaFuture;
+    fn map<F>(self, f: F) -> Map<Self::Fut, F>;
+}
+
+impl<T: EmmaFuture> IMap for T {
+    type Fut = T;
+    fn map<F>(self, f: F) -> Map<Self::Fut, F> {
+        Map::new(self, f)
+    }
+}
