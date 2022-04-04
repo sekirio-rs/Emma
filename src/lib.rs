@@ -19,7 +19,7 @@ pub use futures::join::Join;
 // RefCell for error message
 // UnsafeCell for best performance
 type Handle<T> = Rc<cell::RefCell<T>>;
-type Result<T> = StdResult<T, error::EmmaError>;
+pub type Result<T> = StdResult<T, error::EmmaError>;
 
 /// Build [`Emma`] with custom configuration values.
 pub struct Builder {

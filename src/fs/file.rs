@@ -53,7 +53,7 @@ impl File {
     }
 
     pub fn read<'emma, T: EmmaBuf>(
-        &'emma mut self,
+        &'emma self,
         emma: &'emma Emma,
         buf: &'emma mut T,
     ) -> Result<Pin<Box<op::Op<'emma, read::Read<'emma, T>>>>> {
@@ -82,7 +82,7 @@ impl File {
     }
 
     pub fn write<'emma, T: EmmaBuf + Sync>(
-        &'emma mut self,
+        &'emma self,
         emma: &'emma Emma,
         buf: &'emma T,
     ) -> Result<Pin<Box<op::Op<'emma, write::Write<'emma, T>>>>> {

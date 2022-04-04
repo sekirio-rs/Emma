@@ -19,7 +19,7 @@ async fn open_file(emma: &emma::Emma) -> io::Result<EmmaFile> {
     let reactor = emma::Reactor::new(&emma);
     let mut join_fut = emma::Join::new(reactor);
 
-    let open_fut = emma::fs::File::open(emma, "README.md").map_err(|e| e.as_io_error())?;
+    let open_fut = EmmaFile::open(emma, "README.md").map_err(|e| e.as_io_error())?;
 
     let _ = join_fut.as_mut().join(open_fut);
 
