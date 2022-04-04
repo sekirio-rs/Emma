@@ -51,3 +51,18 @@ pub trait EmmaFuture {
     fn __poll(self: Pin<&mut Self>) -> _Poll<Self::Output>;
     fn __token(self: Pin<&Self>) -> usize;
 }
+
+impl<T> EmmaFuture for Pin<Box<T>>
+where
+    T: EmmaFuture,
+{
+    type Output = <T as EmmaFuture>::Output;
+
+    fn __poll(mut self: Pin<&mut Self>) -> _Poll<Self::Output> {
+        self.as_mut().__poll()
+    }
+
+    fn __token(self: Pin<&Self>) -> usize {
+        self.as_ref().__token()
+    }
+}

@@ -14,6 +14,7 @@ type PinnedEmmaFuture<'a, T> = Pin<Box<dyn EmmaFuture<Output = T> + Unpin + 'a>>
 
 pub struct Join<'emma, T> {
     futures: JoinedFutures<'emma, T>,
+    indexer: Vec<usize>,
     reactor: Reactor<'emma>,
     result: JoinedReady<T>,
 }
@@ -22,26 +23,36 @@ impl<'emma, T: Unpin> Join<'emma, T> {
     pub fn new(reactor: Reactor<'emma>) -> Pin<Box<Join<'emma, T>>> {
         Box::pin(Self {
             futures: HashMap::new(),
+            indexer: Vec::new(),
             reactor,
             result: HashMap::new(),
         })
     }
 
     pub fn join(mut self: Pin<&mut Self>, other: PinnedEmmaFuture<'emma, T>) -> Pin<&mut Self> {
-        self.futures.insert(other.as_ref().__token(), other);
+        let token = other.as_ref().__token();
+        self.indexer.push(token);
+        self.futures.insert(token, other);
         self
     }
 }
 
 impl<T: Unpin> Future for Join<'_, T> {
-    type Output = Result<JoinedReady<T>>;
+    type Output = Result<Vec<T>>;
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let reactor = Pin::new(&mut self.reactor);
         match reactor.wake() {
             Err(e) => return Poll::Ready(Err(e)),
             Ok(state) => {
                 match state {
-                    WakeState::Empty => return Poll::Ready(Ok(std::mem::take(&mut self.result))),
+                    WakeState::Empty => {
+                        let mut result = std::mem::take(&mut self.result);
+                        return Poll::Ready(Ok(self
+                            .indexer
+                            .iter()
+                            .map(|index| result.remove(index).unwrap())
+                            .collect()));
+                    }
                     WakeState::Completion(tokens) => {
                         for token in tokens {
                             let pinned_fut = self.futures.get_mut(&token).unwrap().as_mut();
@@ -54,6 +65,11 @@ impl<T: Unpin> Future for Join<'_, T> {
                                     if let Some(new_token) = t {
                                         let future = self.futures.remove(&token).unwrap();
                                         self.futures.insert(new_token, future);
+                                        *self
+                                            .indexer
+                                            .iter_mut()
+                                            .find(|&&mut x| x == token)
+                                            .unwrap() = new_token;
                                     }
                                 }
                             }

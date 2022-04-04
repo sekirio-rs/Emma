@@ -29,23 +29,13 @@ fn bench_emma() -> io::Result<u128> {
             open_futs.push(fut);
         }
 
-        let tokens = open_futs
-            .iter()
-            .map(|fut| fut.as_ref().__token())
-            .collect::<Vec<_>>();
-
         for fut in open_futs {
             join_fut.as_mut().join(fut);
         }
 
         join_fut
             .await
-            .map(|mut ret| {
-                tokens
-                    .iter()
-                    .map(|token| ret.remove(token).unwrap().unwrap())
-                    .collect::<Vec<_>>()
-            })
+            .map(|ret| ret.into_iter().map(|f| f.unwrap()).collect())
             .map_err(|e| e.as_io_error())
     }
 
