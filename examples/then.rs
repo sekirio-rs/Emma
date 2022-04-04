@@ -1,7 +1,5 @@
 use emma::fs::File as EmmaFile;
 use emma::futures::then::IThen;
-use emma::io::EmmaFuture;
-use emma::Result as EmmaResult;
 use std::io;
 
 fn main() -> io::Result<()> {
