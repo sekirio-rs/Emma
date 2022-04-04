@@ -20,14 +20,14 @@ async fn open_file(emma: &emma::Emma) -> io::Result<EmmaFile> {
     let mut join_fut = emma::Join::new(reactor);
 
     let open_fut = emma::fs::File::open(emma, "README.md").map_err(|e| e.as_io_error())?;
-    let token = open_fut.as_ref().__token();
 
     let _ = join_fut.as_mut().join(open_fut);
 
     let f = join_fut
         .await
-        .map(|mut ret| ret.remove(&token).unwrap().unwrap())
-        .map_err(|e| e.as_io_error())?;
+        .map_err(|e| e.as_io_error())?
+        .remove(0)
+        .unwrap();
 
     Ok(f)
 }

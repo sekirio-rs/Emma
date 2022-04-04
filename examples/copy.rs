@@ -26,20 +26,17 @@ async fn open_file(emma: &emma::Emma) -> io::Result<(EmmaFile, EmmaFile)> {
     let mut join_fut = emma::Join::new(reactor);
 
     let open_fut = EmmaFile::open(emma, SOURCE).map_err(|e| e.as_io_error())?;
-    let token1 = open_fut.as_ref().__token();
 
     let create_fut = EmmaFile::create(emma, TARGET).map_err(|e| e.as_io_error())?;
-    let token2 = create_fut.as_ref().__token();
 
     let _ = join_fut.as_mut().join(open_fut).join(create_fut);
 
     let f = join_fut
         .await
         .map(|mut ret| {
-            (
-                ret.remove(&token1).unwrap().unwrap(),
-                ret.remove(&token2).unwrap().unwrap(),
-            )
+            let f1 = ret.remove(0).unwrap();
+            let f2 = ret.remove(0).unwrap();
+            (f1, f2)
         })
         .map_err(|e| e.as_io_error())?;
 

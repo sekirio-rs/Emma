@@ -1,4 +1,3 @@
-use emma::io::EmmaFuture;
 use emma::net::tcp::listener::TcpListener;
 use emma::net::tcp::stream::TcpStream;
 use emma::Emma;
@@ -35,7 +34,6 @@ fn main() -> io::Result<()> {
 
 async fn accept(emma: &Emma, listener: &TcpListener) -> io::Result<TcpStream> {
     let accept_fut = listener.accept(emma).map_err(|e| e.as_io_error())?;
-    let token = accept_fut.as_ref().__token();
 
     let reactor = Reactor::new(emma);
     let mut join_fut = Join::new(reactor);
@@ -44,7 +42,7 @@ async fn accept(emma: &Emma, listener: &TcpListener) -> io::Result<TcpStream> {
 
     let (stream, _) = join_fut
         .await
-        .map(|mut ret| ret.remove(&token).unwrap().unwrap())
+        .map(|mut ret| ret.remove(0).unwrap())
         .map_err(|e| e.as_io_error())?;
 
     Ok(stream)
@@ -52,7 +50,6 @@ async fn accept(emma: &Emma, listener: &TcpListener) -> io::Result<TcpStream> {
 
 async fn recv(emma: &Emma, buf: &mut [u8; 1024], stream: &TcpStream) -> io::Result<usize> {
     let recv_fut = stream.recv(emma, buf).map_err(|e| e.as_io_error())?;
-    let token = recv_fut.as_ref().__token();
 
     let mut join_fut = Join::new(Reactor::new(emma));
 
@@ -60,7 +57,7 @@ async fn recv(emma: &Emma, buf: &mut [u8; 1024], stream: &TcpStream) -> io::Resu
 
     let res = join_fut
         .await
-        .map(|mut ret| ret.remove(&token).unwrap().unwrap().uring_res as _)
+        .map(|mut ret| ret.remove(0).unwrap().uring_res as _)
         .map_err(|e| e.as_io_error())?;
 
     Ok(res)
