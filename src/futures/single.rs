@@ -28,7 +28,7 @@ impl<T: Unpin> Future for Single<'_, T> {
         match reactor.wake() {
             Err(e) => return Poll::Ready(Err(e)),
             Ok(state) => match state {
-                WakeState::Empty => unreachable!(),
+                WakeState::Empty => panic!("Reactor wake empty"),
                 WakeState::Completion(tokens) => {
                     for token in tokens {
                         if self.future.as_ref().__token() == token {
