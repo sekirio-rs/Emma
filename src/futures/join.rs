@@ -33,6 +33,7 @@ impl<'emma, T: Unpin> Join<'emma, T> {
         let token = other.as_ref().__token();
         self.indexer.push(token);
         self.futures.insert(token, other);
+
         self
     }
 }

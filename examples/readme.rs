@@ -1,4 +1,4 @@
-use emma::fs::File as EmmaFile;
+use emma::alias::*;
 use std::io;
 
 fn main() -> io::Result<()> {
@@ -9,41 +9,14 @@ fn main() -> io::Result<()> {
     rt.block_on(async {
         let emma = emma::Builder::new().build().unwrap();
 
-        let f = open_file(&emma).await?;
+        let mut f = open_file(&emma, "README.md").await?;
 
-        read_file(&emma, f).await
+        let mut buf = [0u8; 1024];
+
+        read_file(&emma, &mut f, &mut buf).await?;
+
+        println!("{}", String::from_utf8_lossy(&buf));
+
+        Ok(())
     })
-}
-
-async fn open_file(emma: &emma::Emma) -> io::Result<EmmaFile> {
-    let reactor = emma::Reactor::new(&emma);
-    let mut join_fut = emma::Join::new(reactor);
-
-    let open_fut = emma::fs::File::open(emma, "README.md").map_err(|e| e.as_io_error())?;
-
-    let _ = join_fut.as_mut().join(open_fut);
-
-    let f = join_fut
-        .await
-        .map_err(|e| e.as_io_error())?
-        .remove(0)
-        .unwrap();
-
-    Ok(f)
-}
-
-async fn read_file(emma: &emma::Emma, mut f: EmmaFile) -> io::Result<()> {
-    let mut buf = [0u8; 1024];
-    // let mut buf = vec![0u8; 1024].into_boxed_slice();
-
-    let read_fut = f.read(emma, &mut buf).map_err(|e| e.as_io_error())?;
-    let reactor = emma::Reactor::new(emma);
-    let mut join_fut = emma::Join::new(reactor);
-
-    let _ = join_fut.as_mut().join(read_fut);
-
-    let _ = join_fut.await.map_err(|e| e.as_io_error())?;
-
-    println!("{}", String::from_utf8_lossy(&buf));
-    Ok(())
 }
