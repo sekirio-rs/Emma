@@ -1,12 +1,14 @@
 //! Asynchronous I/O library based on io_uring.
 
 #![allow(non_snake_case)]
+pub mod alias;
 pub mod driver;
 pub mod error;
 pub mod fs;
 pub mod futures;
 pub mod io;
 pub mod net;
+
 use error::EmmaError;
 use io_uring::IoUring;
 use std::cell;
