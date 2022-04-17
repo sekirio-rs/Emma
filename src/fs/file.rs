@@ -2,6 +2,7 @@ use crate::futures::map::IMap;
 use crate::io::EmmaBuf;
 use crate::io::EmmaFuture;
 use crate::io::{
+    close,
     op::{self, Ready},
     open::OpenFlags,
     read, write,
@@ -90,5 +91,9 @@ impl File {
         let boxed_fut = Box::pin(fut);
 
         Ok(boxed_fut)
+    }
+
+    pub fn close<'emma>(self, emma: &'emma Emma) -> Result<Pin<Box<op::Op<'emma, close::Close>>>> {
+        Ok(Box::pin(op::Op::async_close(emma, self.fd)?))
     }
 }
