@@ -5,12 +5,12 @@ use crate::Result;
 use io_uring::{opcode, types};
 use std::os::unix::io::RawFd;
 
-pub struct Recv<'recv, T> {
+pub struct Recv<'recv, T: ?Sized> {
     fd: RawFd,
     buf: &'recv mut T,
 }
 
-impl<'recv, 'emma, T: EmmaBuf> Op<'emma, Recv<'recv, T>> {
+impl<'recv, 'emma, T: EmmaBuf + ?Sized> Op<'emma, Recv<'recv, T>> {
     pub fn async_recv(
         fd: RawFd,
         emma: &'emma Emma,

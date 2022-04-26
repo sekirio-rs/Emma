@@ -18,7 +18,7 @@ impl TcpStream {
         }
     }
 
-    pub fn recv<'emma, T: EmmaBuf>(
+    pub fn recv<'emma, T: EmmaBuf + ?Sized>(
         &'emma self,
         emma: &'emma Emma,
         buf: &'emma mut T,
@@ -28,7 +28,7 @@ impl TcpStream {
         Ok(Box::pin(fut))
     }
 
-    pub fn send<'emma, T: EmmaBuf + Sync>(
+    pub fn send<'emma, T: EmmaBuf + Sync + ?Sized>(
         &'emma self,
         emma: &'emma Emma,
         buf: &'emma T,

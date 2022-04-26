@@ -41,6 +41,18 @@ unsafe impl<const N: usize> EmmaBuf for [u8; N] {
     }
 }
 
+unsafe impl EmmaBuf for [u8] {
+    fn ptr(&self) -> *const u8 {
+        self.as_ptr()
+    }
+    fn mut_ptr(&mut self) -> *mut u8 {
+        self.as_mut_ptr()
+    }
+    fn bytes(&self) -> usize {
+        self.len()
+    }
+}
+
 pub enum _Poll<T> {
     Ready(T),
     Pending(Option<usize>),
