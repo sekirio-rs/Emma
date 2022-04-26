@@ -66,7 +66,7 @@ impl Clone for Emma {
     fn clone(&self) -> Self {
         Self {
             uring: self.uring.clone(),
-            inner: self.inner.clone()
+            inner: self.inner.clone(),
         }
     }
 }

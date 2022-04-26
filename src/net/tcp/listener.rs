@@ -30,7 +30,7 @@ impl TcpListener {
         let socket = unix::new_socket(addr)?;
 
         unix::set_reuseaddr(socket, true)?;
-        
+
         unix::set_reuseport(socket, true)?;
 
         unix::bind(socket, addr)?;
