@@ -18,7 +18,7 @@ impl TcpStream {
         }
     }
 
-    pub fn recv<'emma, T: EmmaBuf>(
+    pub fn recv<'emma, T: EmmaBuf + ?Sized>(
         &'emma self,
         emma: &'emma Emma,
         buf: &'emma mut T,
