@@ -31,6 +31,8 @@ impl TcpListener {
 
         unix::set_reuseaddr(socket, true)?;
 
+        unix::set_reuseport(socket, true)?;
+
         unix::bind(socket, addr)?;
 
         unix::listen(socket, BACKLOG)?;
