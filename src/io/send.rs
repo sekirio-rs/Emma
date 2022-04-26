@@ -5,12 +5,12 @@ use crate::Result;
 use io_uring::{opcode, types};
 use std::os::unix::io::RawFd;
 
-pub struct Send_<'send, T> {
+pub struct Send_<'send, T: ?Sized> {
     fd: RawFd,
     buf: &'send T,
 }
 
-impl<'send, 'emma, T: EmmaBuf + Sync> Op<'emma, Send_<'send, T>> {
+impl<'send, 'emma, T: EmmaBuf + Sync + ?Sized> Op<'emma, Send_<'send, T>> {
     pub fn async_send(
         fd: RawFd,
         emma: &'emma Emma,

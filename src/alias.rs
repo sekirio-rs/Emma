@@ -57,7 +57,7 @@ pub async fn accept_socket(emma: &Emma, listener: &EmmaListener) -> io::Result<E
     Ok(stream)
 }
 
-pub async fn recv_msg<T: EmmaBuf>(
+pub async fn recv_msg<T: EmmaBuf + ?Sized>(
     emma: &Emma,
     buf: &mut T,
     stream: &EmmaStream,
@@ -72,7 +72,7 @@ pub async fn recv_msg<T: EmmaBuf>(
     Ok(res.uring_res as usize)
 }
 
-pub async fn send_msg<T: EmmaBuf + Sync>(
+pub async fn send_msg<T: EmmaBuf + Sync + ?Sized>(
     emma: &Emma,
     buf: &T,
     stream: &EmmaStream,
