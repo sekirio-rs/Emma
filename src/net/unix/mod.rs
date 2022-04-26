@@ -43,6 +43,19 @@ pub(crate) fn set_reuseaddr(socket: libc::c_int, reuseadr: bool) -> Result<()> {
     Ok(())
 }
 
+pub(crate) fn set_reuseport(socket: libc::c_int, reuseport: bool) -> Result<()> {
+    let val: libc::c_int = if reuseport { 1 } else { 0 };
+    syscall!(setsockopt(
+        socket,
+        libc::SOL_SOCKET,
+        libc::SO_REUSEPORT,
+        &val as *const libc::c_int as *const libc::c_void,
+        size_of::<libc::c_int>() as libc::socklen_t,
+    ))?;
+
+    Ok(())
+}
+
 #[repr(C)]
 pub(crate) union SocketAddrCRepr {
     v4: libc::sockaddr_in,

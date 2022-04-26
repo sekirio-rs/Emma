@@ -62,6 +62,15 @@ pub struct Emma {
     pub(crate) inner: Handle<Inner>,
 }
 
+impl Clone for Emma {
+    fn clone(&self) -> Self {
+        Self {
+            uring: self.uring.clone(),
+            inner: self.inner.clone()
+        }
+    }
+}
+
 /// Inner for [`Emma`], and will be shared with [`Op`]
 /// in the same thread.
 struct Inner {

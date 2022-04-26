@@ -48,7 +48,7 @@ pub async fn write_file<T: EmmaBuf + Sync>(
 
 pub async fn accept_socket(emma: &Emma, listener: &EmmaListener) -> io::Result<EmmaStream> {
     let accept_fut = listener.accept(emma).map_err(|e| e.as_io_error())?;
-
+    
     let (stream, _) = single::Single::new(Reactor::new(emma), accept_fut)
         .await
         .map_err(|e| e.as_io_error())?
