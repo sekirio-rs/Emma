@@ -1,4 +1,4 @@
-use emma::fs::File as EmmaFile;
+use emma::alias::*;
 use std::io;
 
 const SOURCE: &str = "README.md";
@@ -13,56 +13,11 @@ fn main() -> io::Result<()> {
         let emma = emma::Builder::new().build().unwrap();
         let mut buf = [0u8; 1024];
 
-        let (src, dest) = open_file(&emma).await?;
+        let mut src = open_file(&emma, SOURCE).await?;
+        let mut dest = open_file(&emma, TARGET).await?;
 
-        do_read(&emma, src, &mut buf).await?;
+        read_file(&emma, &mut src, &mut buf).await?;
 
-        do_write(&emma, dest, &buf).await
+        write_file(&emma, &mut dest, &buf).await
     })
-}
-
-async fn open_file(emma: &emma::Emma) -> io::Result<(EmmaFile, EmmaFile)> {
-    let reactor = emma::Reactor::new(&emma);
-    let mut join_fut = emma::Join::new(reactor);
-
-    let open_fut = EmmaFile::open(emma, SOURCE).map_err(|e| e.as_io_error())?;
-
-    let create_fut = EmmaFile::create(emma, TARGET).map_err(|e| e.as_io_error())?;
-
-    let _ = join_fut.as_mut().join(open_fut).join(create_fut);
-
-    let f = join_fut
-        .await
-        .map(|mut ret| {
-            let f1 = ret.remove(0).unwrap();
-            let f2 = ret.remove(0).unwrap();
-            (f1, f2)
-        })
-        .map_err(|e| e.as_io_error())?;
-
-    Ok(f)
-}
-
-async fn do_read(emma: &emma::Emma, mut src: EmmaFile, buf: &mut [u8; 1024]) -> io::Result<()> {
-    let read_fut = src.read(emma, buf).map_err(|e| e.as_io_error())?;
-    let reactor = emma::Reactor::new(emma);
-    let mut join_fut = emma::Join::new(reactor);
-
-    let _ = join_fut.as_mut().join(read_fut);
-
-    let _ = join_fut.await.map_err(|e| e.as_io_error())?;
-
-    Ok(())
-}
-
-async fn do_write(emma: &emma::Emma, mut dest: EmmaFile, buf: &[u8; 1024]) -> io::Result<()> {
-    let read_fut = dest.write(emma, buf).map_err(|e| e.as_io_error())?;
-    let reactor = emma::Reactor::new(emma);
-    let mut join_fut = emma::Join::new(reactor);
-
-    let _ = join_fut.as_mut().join(read_fut);
-
-    let _ = join_fut.await.map_err(|e| e.as_io_error())?;
-
-    Ok(())
 }
