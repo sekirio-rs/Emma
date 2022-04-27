@@ -93,6 +93,24 @@ impl File {
         Ok(boxed_fut)
     }
 
+    pub fn multi_write<'emma, T: EmmaBuf + Sync>(
+        files: &mut Vec<Self>,
+        emma: &'emma Emma,
+        bufs: &'emma Vec<T>,
+    ) -> Result<Vec<Pin<Box<op::Op<'emma, write::Write<'emma, T>>>>>> {
+        assert_eq!(files.len(), bufs.len());
+
+        let mut futs = Vec::new();
+        for (file, buf) in files.iter().zip(bufs) {
+            let fut = op::Op::async_write(file.fd, emma, buf)?;
+            let boxed_fut = Box::pin(fut);
+
+            futs.push(boxed_fut);
+        }
+
+        Ok(futs)
+    }
+
     pub fn close<'emma>(self, emma: &'emma Emma) -> Result<Pin<Box<op::Op<'emma, close::Close>>>> {
         Ok(Box::pin(op::Op::async_close(emma, self.fd)?))
     }
