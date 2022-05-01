@@ -44,7 +44,13 @@ impl<'emma> Op<'emma, Open> {
                 .build()
                 .user_data(token as _);
 
-            (entry, Open { _dirfd: None, _path: path })
+            (
+                entry,
+                Open {
+                    _dirfd: None,
+                    _path: path,
+                },
+            )
         })
     }
 }

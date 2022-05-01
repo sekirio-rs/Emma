@@ -28,7 +28,7 @@ impl<'emma, T: Unpin> Join<'emma, T> {
             result: HashMap::new(),
         })
     }
-    
+
     #[allow(clippy::self_named_constructors)]
     pub fn join(mut self: Pin<&mut Self>, other: PinnedEmmaFuture<'emma, T>) -> Pin<&mut Self> {
         let token = other.as_ref().__token();
