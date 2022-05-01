@@ -1,4 +1,6 @@
 //! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
+//!
+//! Helper functions, do not use as much as possible!.
 use crate::{
     fs::File as EmmaFile,
     futures::*,

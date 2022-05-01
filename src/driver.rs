@@ -1,16 +1,29 @@
 //! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
-//! Event Driver
+//!
+//! Event Driver of Emma.
 use crate::{Emma, EmmaError, EmmaState, Handle, Inner as EmmaInner, Result};
 use io_uring::IoUring;
 use std::{marker::PhantomData, pin::Pin};
 
+/// Reactor to wake Emma' s futures
 pub struct Reactor<'emma> {
+    /// Single-thread shared handle of io_uring instance
     uring_handle: Handle<IoUring>,
+    /// Single-thread shared handle of [`EmmaInner`]
     inner_handle: Handle<EmmaInner>,
     _maker: PhantomData<&'emma Emma>,
 }
 
 impl Reactor<'_> {
+    /// Creates a reactor ref to given [`Emma`].
+    ///
+    /// # Examples
+    /// ```
+    /// use emma::{Builer, Reactor};
+    ///
+    /// let emma = Builer::new().build().unwrap();
+    /// let reactor = Reactor::new(&emma);
+    /// ```
     #[allow(clippy::needless_lifetimes)]
     pub fn new<'emma>(emma: &'emma Emma) -> Reactor<'emma> {
         Reactor {
@@ -20,6 +33,12 @@ impl Reactor<'_> {
         }
     }
 
+    /// Wake futures that refered to current [`Emma`]
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub(crate) fn wake(self: Pin<&mut Self>) -> Result<WakeState> {
         // 1. submit_and_wait in uring
         // 2. traverse cqe, get related token

@@ -1,4 +1,7 @@
 //! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
+//!
+//! Implementation of Linux io_uring based asynchorous filesystem I/O
+//! operations.
 use crate::{
     futures::map::IMap,
     io::{
@@ -11,16 +14,32 @@ use crate::{
 };
 use std::{os::unix::io::RawFd, path::Path, pin::Pin};
 
+/// The structure holds a file descriptor.
+///
+/// It's clever to perform all file related operations via [`File`] and it's
+/// methods.
 pub struct File {
     // currently raw fd
     fd: RawFd,
 }
 
 impl File {
+    /// Construct a [`File`] with given file descriptor.
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub fn fram_raw_fd(fd: RawFd) -> Self {
         Self { fd }
     }
 
+    /// Asynchorously open a [`File`] with read-only flags.
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub fn open<'emma, P: AsRef<Path>>(
         emma: &'emma Emma,
         path: P,
@@ -28,6 +47,13 @@ impl File {
         Self::open_inner(emma, path, OpenFlags::READ_ONLY)
     }
 
+    /// Asynchorously ppen a [`File`] with write-only flags and crate a file if
+    /// it does not exist.
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub fn create<'emma, P: AsRef<Path>>(
         emma: &'emma Emma,
         path: P,
@@ -51,6 +77,12 @@ impl File {
         Ok(Box::pin(fut))
     }
 
+    /// Asynchorously read bytes from currently [`File`] to given buffer.
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub fn read<'emma, T: EmmaBuf>(
         &'emma mut self,
         emma: &'emma Emma,
@@ -62,6 +94,12 @@ impl File {
         Ok(boxed_fut)
     }
 
+    /// Asynchorously read bytes from multi [`File`]s to multi given buffers.
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub fn multi_read<'emma, T: EmmaBuf>(
         files: &mut [Self],
         emma: &'emma Emma,
@@ -80,6 +118,12 @@ impl File {
         Ok(futs)
     }
 
+    /// Asynchorously write bytes to currently [`File`] from given buffer.
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub fn write<'emma, T: EmmaBuf + Sync>(
         &'emma mut self,
         emma: &'emma Emma,
@@ -91,6 +135,12 @@ impl File {
         Ok(boxed_fut)
     }
 
+    /// Asynchorously write bytes to multi [`File`] from multi given buffer.
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub fn multi_write<'emma, T: EmmaBuf + Sync>(
         files: &mut [Self],
         emma: &'emma Emma,
