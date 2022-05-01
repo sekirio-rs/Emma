@@ -115,3 +115,9 @@ impl File {
         Ok(Box::pin(op::Op::async_close(emma, self.fd)?))
     }
 }
+
+impl Drop for File {
+    fn drop(&mut self) {
+        unsafe { libc::close(self.fd) };
+    }
+}
