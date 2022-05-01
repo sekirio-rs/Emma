@@ -110,7 +110,8 @@ impl File {
 
         Ok(futs)
     }
-
+    
+    #[allow(clippy::needless_lifetimes)]
     pub fn close<'emma>(self, emma: &'emma Emma) -> Result<Pin<Box<op::Op<'emma, close::Close>>>> {
         Ok(Box::pin(op::Op::async_close(emma, self.fd)?))
     }
