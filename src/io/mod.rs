@@ -10,7 +10,7 @@ pub(crate) mod write;
 
 use std::pin::Pin;
 
-// todo: use macro
+#[allow(clippy::missing_safety_doc)]
 pub unsafe trait EmmaBuf: Unpin + 'static + Send {
     fn ptr(&self) -> *const u8;
     fn mut_ptr(&mut self) -> *mut u8;
