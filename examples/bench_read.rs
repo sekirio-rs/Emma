@@ -43,7 +43,7 @@ fn bench_emma() -> io::Result<u128> {
     let rt = tokio::runtime::Builder::new_current_thread().build()?;
 
     let _ = rt.block_on(async move {
-        let emma = emma::Builder::new().build().unwrap();
+        let emma = emma::Builder::new().build()?;
 
         let mut files = open_files(&emma).await?;
 
@@ -52,7 +52,7 @@ fn bench_emma() -> io::Result<u128> {
             .map(|_| [0u8; BUFFER_LEN])
             .collect::<Vec<[u8; BUFFER_LEN]>>();
 
-        let read_futs = emma::fs::File::multi_read(&mut files, &emma, &mut bufs).unwrap();
+        let read_futs = emma::fs::File::multi_read(&mut files, &emma, &mut bufs)?;
 
         let reactor = emma::Reactor::new(&emma);
 
@@ -62,7 +62,11 @@ fn bench_emma() -> io::Result<u128> {
             joinned_fut.as_mut().join(fut);
         });
 
-        joinned_fut.await.map(|_| ()).map_err(|e| e.as_io_error())
+        let _ = joinned_fut.await?;
+
+        let ret: std::io::Result<()> = Ok(());
+
+        ret
     })?;
 
     let cost = start.elapsed().as_micros();
