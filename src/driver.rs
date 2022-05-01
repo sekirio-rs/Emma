@@ -1,9 +1,7 @@
 //! Event Driver
-use crate::{Emma, EmmaError, Handle, Inner as EmmaInner};
-use crate::{EmmaState, Result};
+use crate::{Emma, EmmaError, EmmaState, Handle, Inner as EmmaInner, Result};
 use io_uring::IoUring;
-use std::marker::PhantomData;
-use std::pin::Pin;
+use std::{marker::PhantomData, pin::Pin};
 
 pub struct Reactor<'emma> {
     uring_handle: Handle<IoUring>,

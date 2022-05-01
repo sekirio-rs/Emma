@@ -1,5 +1,4 @@
-use emma::alias::*;
-use emma::net::tcp::listener::TcpListener;
+use emma::{alias::*, net::tcp::listener::TcpListener};
 use std::io;
 
 fn main() -> io::Result<()> {

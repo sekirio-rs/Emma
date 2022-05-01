@@ -1,10 +1,12 @@
-use crate::io::EmmaBuf;
-use crate::io::{op, recv, send};
-use crate::Emma;
-use crate::Result;
-use std::net;
-use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
-use std::pin::Pin;
+use crate::{
+    io::{op, recv, send, EmmaBuf},
+    Emma, Result,
+};
+use std::{
+    net,
+    os::unix::io::{AsRawFd, FromRawFd, RawFd},
+    pin::Pin,
+};
 
 pub struct TcpStream {
     // currently [`std::net::TcpStream`]

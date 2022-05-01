@@ -80,8 +80,8 @@ pub trait EmmaFuture {
 //     }
 // }
 
-// impl<'a, T> EmmaFuture for Pin<Box<dyn EmmaFuture<Output = T> + 'a + Unpin>> {
-//     type Output = T;
+// impl<'a, T> EmmaFuture for Pin<Box<dyn EmmaFuture<Output = T> + 'a + Unpin>>
+// {     type Output = T;
 //
 //     fn __poll(mut self: Pin<&mut Self>) -> _Poll<Self::Output> {
 //         self.as_mut().__poll()

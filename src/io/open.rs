@@ -1,12 +1,8 @@
 use super::op::Op;
-use crate::Emma;
-use crate::EmmaError;
-use crate::Result;
+use crate::{Emma, EmmaError, Result};
 use bitflags::bitflags;
 use io_uring::{opcode, types};
-use std::ffi::CString;
-use std::os::unix::prelude::OsStrExt;
-use std::path::Path;
+use std::{ffi::CString, os::unix::prelude::OsStrExt, path::Path};
 
 pub struct Open {
     _dirfd: Option<libc::c_int>,

@@ -1,12 +1,9 @@
-use crate::error::EmmaError;
-use crate::io::{EmmaFuture, _Poll};
-use crate::Emma;
-use crate::EmmaState;
-use crate::Handle;
-use crate::Inner as EmmaInner;
-use crate::Result;
-use std::marker::PhantomData;
-use std::pin::Pin;
+use crate::{
+    error::EmmaError,
+    io::{EmmaFuture, _Poll},
+    Emma, EmmaState, Handle, Inner as EmmaInner, Result,
+};
+use std::{marker::PhantomData, pin::Pin};
 
 pub struct Op<'emma, T> {
     /// token in ['EmmaInner::slab']

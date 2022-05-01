@@ -1,8 +1,6 @@
 use emma::fs::File as EmmaFile;
-use std::io;
-use std::time;
-use tokio::fs::File as TokioFile;
-use tokio::io::AsyncReadExt;
+use std::{io, time};
+use tokio::{fs::File as TokioFile, io::AsyncReadExt};
 
 const PATH: &str = "README.md";
 const BUFFER_LEN: usize = 1024;

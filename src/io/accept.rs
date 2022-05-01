@@ -1,10 +1,10 @@
 use super::op::Op;
-use crate::Emma;
-use crate::Result;
+use crate::{Emma, Result};
 use io_uring::{opcode, types};
-use std::mem::size_of;
-use std::mem::MaybeUninit;
-use std::os::unix::io::RawFd;
+use std::{
+    mem::{size_of, MaybeUninit},
+    os::unix::io::RawFd,
+};
 
 // todo: ref
 pub struct Accept {

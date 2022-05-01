@@ -1,17 +1,14 @@
-use crate::futures::map::IMap;
-use crate::io::EmmaBuf;
-use crate::io::EmmaFuture;
-use crate::io::{
-    close,
-    op::{self, Ready},
-    open::OpenFlags,
-    read, write,
+use crate::{
+    futures::map::IMap,
+    io::{
+        close,
+        op::{self, Ready},
+        open::OpenFlags,
+        read, write, EmmaBuf, EmmaFuture,
+    },
+    Emma, Result,
 };
-use crate::Emma;
-use crate::Result;
-use std::os::unix::io::RawFd;
-use std::path::Path;
-use std::pin::Pin;
+use std::{os::unix::io::RawFd, path::Path, pin::Pin};
 
 pub struct File {
     // currently raw fd

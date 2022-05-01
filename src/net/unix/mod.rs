@@ -1,9 +1,6 @@
 // todo: ref
-use crate::EmmaError;
-use crate::Result;
-use std::io;
-use std::mem::size_of;
-use std::net;
+use crate::{EmmaError, Result};
+use std::{io, mem::size_of, net};
 
 macro_rules! syscall {
     ($fn: ident ( $($arg: expr),* $(,)* ) ) => {{

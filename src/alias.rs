@@ -1,10 +1,10 @@
-use crate::fs::File as EmmaFile;
-use crate::futures::*;
-use crate::io::EmmaBuf;
-use crate::net::tcp::listener::TcpListener as EmmaListener;
-use crate::net::tcp::stream::TcpStream as EmmaStream;
-use crate::Emma;
-use crate::Reactor;
+use crate::{
+    fs::File as EmmaFile,
+    futures::*,
+    io::EmmaBuf,
+    net::tcp::{listener::TcpListener as EmmaListener, stream::TcpStream as EmmaStream},
+    Emma, Reactor,
+};
 use std::io;
 
 pub async fn open_file(emma: &Emma, path: impl AsRef<std::path::Path>) -> io::Result<EmmaFile> {

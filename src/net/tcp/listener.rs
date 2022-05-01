@@ -1,15 +1,17 @@
-use super::super::unix;
-use super::stream::TcpStream;
-use crate::futures::map::Map;
-use crate::io::op::{self, Ready};
-use crate::io::EmmaFuture;
-use crate::Emma;
-use crate::EmmaError;
-use crate::Result;
-use std::io;
-use std::net;
-use std::os::unix::io::{AsRawFd, FromRawFd};
-use std::pin::Pin;
+use super::{super::unix, stream::TcpStream};
+use crate::{
+    futures::map::Map,
+    io::{
+        op::{self, Ready},
+        EmmaFuture,
+    },
+    Emma, EmmaError, Result,
+};
+use std::{
+    io, net,
+    os::unix::io::{AsRawFd, FromRawFd},
+    pin::Pin,
+};
 
 const BACKLOG: u32 = 1024;
 

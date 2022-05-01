@@ -1,12 +1,16 @@
 //! JoinFuture
 
-use crate::driver::{Reactor, WakeState};
-use crate::io::{EmmaFuture, _Poll};
-use crate::Result;
-use std::collections::HashMap;
-use std::future::Future;
-use std::pin::Pin;
-use std::task::{Context, Poll};
+use crate::{
+    driver::{Reactor, WakeState},
+    io::{EmmaFuture, _Poll},
+    Result,
+};
+use std::{
+    collections::HashMap,
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
 
 type JoinedFutures<'a, T> = HashMap<usize, Pin<Box<dyn EmmaFuture<Output = T> + Unpin + 'a>>>;
 type JoinedReady<T> = HashMap<usize, T>;

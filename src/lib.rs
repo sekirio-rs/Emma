@@ -11,9 +11,7 @@ pub mod net;
 
 use error::EmmaError;
 use io_uring::IoUring;
-use std::cell;
-use std::rc::Rc;
-use std::result::Result as StdResult;
+use std::{cell, rc::Rc, result::Result as StdResult};
 
 pub use driver::Reactor;
 pub use futures::join::Join;

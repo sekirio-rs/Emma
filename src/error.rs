@@ -1,5 +1,4 @@
-use std::error::Error as StdError;
-use std::fmt::Debug;
+use std::{error::Error as StdError, fmt::Debug};
 
 pub trait DebugError: StdError + Debug {}
 

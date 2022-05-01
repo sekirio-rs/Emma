@@ -1,7 +1,5 @@
-use super::op::Op;
-use super::EmmaBuf;
-use crate::Emma;
-use crate::Result;
+use super::{op::Op, EmmaBuf};
+use crate::{Emma, Result};
 use io_uring::{opcode, types};
 use std::os::unix::io::RawFd;
 
