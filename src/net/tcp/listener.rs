@@ -21,7 +21,7 @@ impl TcpListener {
     pub fn bind<A: net::ToSocketAddrs>(addr: A) -> Result<Self> {
         let addr = addr
             .to_socket_addrs()
-            .map_err(|e| EmmaError::IoError(e))?
+            .map_err(EmmaError::IoError)?
             .next()
             .ok_or_else(|| {
                 EmmaError::IoError(io::Error::new(io::ErrorKind::Other, "invalid ip address"))

@@ -42,7 +42,7 @@ impl Builder {
         self
     }
     pub fn build(self) -> Result<Emma> {
-        let uring = IoUring::new(self.entries).map_err(|e| EmmaError::IoError(e))?;
+        let uring = IoUring::new(self.entries).map_err(EmmaError::IoError)?;
         let inner = Inner {
             slab: slab::Slab::with_capacity(Self::DEFAULT_ENTRIES as usize * 10),
         };

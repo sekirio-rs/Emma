@@ -19,7 +19,7 @@ fn main() -> io::Result<()> {
 
 fn bench_emma() -> io::Result<u128> {
     async fn open_files(emma: &emma::Emma) -> io::Result<Vec<EmmaFile>> {
-        let reactor = emma::Reactor::new(&emma);
+        let reactor = emma::Reactor::new(emma);
         let mut join_fut = emma::Join::new(reactor);
 
         let mut open_futs = Vec::new();

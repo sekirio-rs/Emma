@@ -45,7 +45,7 @@ impl<'emma, T: Send> Op<'emma, T> {
         let mut uring = emma.uring.borrow_mut();
 
         if uring.submission().is_full() {
-            uring.submit().map_err(|e| EmmaError::IoError(e))?; // flush to kernel
+            uring.submit().map_err(EmmaError::IoError)?; // flush to kernel
         }
 
         let mut sq = uring.submission();
