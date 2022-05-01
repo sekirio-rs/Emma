@@ -32,14 +32,6 @@ impl Debug for EmmaError {
 
 impl std::fmt::Display for EmmaError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // match self {
-        //     EmmaError::IoError(e) => {
-        //         write!(f, "{:?}", e)
-        //     }
-        //     EmmaError::Other(e) => {
-        //         write!(f, "{:?}", e)
-        //     }
-        // }
         (self as &dyn Debug).fmt(f)
     }
 }
@@ -50,5 +42,11 @@ impl StdError for EmmaError {
             EmmaError::IoError(e) => e.source(),
             EmmaError::Other(e) => e.source(),
         }
+    }
+}
+
+impl From<EmmaError> for std::io::Error {
+    fn from(e: EmmaError) -> Self {
+        e.as_io_error()
     }
 }

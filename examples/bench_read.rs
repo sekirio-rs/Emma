@@ -25,7 +25,7 @@ fn bench_emma() -> io::Result<u128> {
         let mut open_futs = Vec::new();
 
         for _ in 0..BENCH_SIZE {
-            let fut = EmmaFile::open(emma, PATH).map_err(|e| e.as_io_error())?;
+            let fut = EmmaFile::open(emma, PATH)?;
             open_futs.push(fut);
         }
 
@@ -33,10 +33,9 @@ fn bench_emma() -> io::Result<u128> {
             join_fut.as_mut().join(fut);
         }
 
-        join_fut
+        Ok(join_fut
             .await
-            .map(|ret| ret.into_iter().map(|f| f.unwrap()).collect())
-            .map_err(|e| e.as_io_error())
+            .map(|ret| ret.into_iter().map(|f| f.unwrap()).collect())?)
     }
 
     let start = time::Instant::now();

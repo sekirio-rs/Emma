@@ -7,7 +7,7 @@ fn main() -> io::Result<()> {
         .unwrap();
 
     rt.block_on(async {
-        let emma = emma::Builder::new().build().unwrap();
+        let emma = emma::Builder::new().build()?;
 
         let mut f = open_file(&emma, "README.md").await?;
 
