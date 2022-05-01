@@ -1,3 +1,4 @@
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 use super::{op::Op, EmmaBuf};
 use crate::{Emma, Result};
 use io_uring::{opcode, types};

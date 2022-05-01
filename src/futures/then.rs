@@ -1,3 +1,4 @@
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 use super::{flatten::Flatten, map::Map};
 use crate::io::{EmmaFuture, _Poll};
 use std::pin::Pin;

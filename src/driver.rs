@@ -1,3 +1,4 @@
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 //! Event Driver
 use crate::{Emma, EmmaError, EmmaState, Handle, Inner as EmmaInner, Result};
 use io_uring::IoUring;

@@ -1,3 +1,4 @@
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 //! Asynchronous I/O library based on io_uring.
 
 #![allow(non_snake_case)]

@@ -1,3 +1,4 @@
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 // todo: ref
 use crate::{EmmaError, Result};
 use std::{io, mem::size_of, net};

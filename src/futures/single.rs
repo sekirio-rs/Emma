@@ -1,3 +1,4 @@
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 use crate::{
     driver::{Reactor, WakeState},
     io::{EmmaFuture, _Poll},

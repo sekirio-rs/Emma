@@ -1,3 +1,4 @@
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 //! Traits and something else for asynchronous I/O operations.
 pub(crate) mod accept;
 pub(crate) mod close;

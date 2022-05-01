@@ -1,3 +1,4 @@
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 use std::{error::Error as StdError, fmt::Debug};
 
 pub trait DebugError: StdError + Debug {}

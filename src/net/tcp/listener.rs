@@ -1,3 +1,4 @@
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 use super::{super::unix, stream::TcpStream};
 use crate::{
     futures::map::Map,
