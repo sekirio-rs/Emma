@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+#![deny(missing_docs)]
 
 //! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 //!
@@ -67,10 +68,13 @@
 //! }
 //! ```
 
+#[allow(missing_docs)]
 pub mod alias;
 pub mod driver;
+#[allow(missing_docs)]
 pub mod error;
 pub mod fs;
+#[allow(missing_docs)]
 pub mod futures;
 pub mod io;
 pub mod net;
@@ -85,6 +89,7 @@ pub use futures::join::Join;
 // RefCell for error message
 // UnsafeCell for best performance
 type Handle<T> = Rc<cell::RefCell<T>>;
+#[allow(missing_docs)]
 pub type Result<T> = StdResult<T, error::EmmaError>;
 
 /// Build [`Emma`] with custom configuration values.

@@ -9,18 +9,39 @@ use std::{
     pin::Pin,
 };
 
+/// A TCP stream between a local and a remote socket.
+///
+/// # Examples
+/// ```
+/// todo!()
+/// ```
 pub struct TcpStream {
     // currently [`std::net::TcpStream`]
     inner: net::TcpStream,
 }
 
 impl TcpStream {
+    /// Construct a [`TcpStream`] with given sockfd.
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
+    ///
+    /// # Safety
+    /// TODO
     pub unsafe fn from_raw_fd(fd: RawFd) -> Self {
         Self {
             inner: net::TcpStream::from_raw_fd(fd),
         }
     }
 
+    /// Asynchorously recv messsage from currently [`TcpStream`].
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub fn recv<'emma, T: EmmaBuf + ?Sized>(
         &'emma self,
         emma: &'emma Emma,
@@ -31,6 +52,12 @@ impl TcpStream {
         Ok(Box::pin(fut))
     }
 
+    /// Asynchorously send messsage from currently [`TcpStream`].
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub fn send<'emma, T: EmmaBuf + Sync + ?Sized>(
         &'emma self,
         emma: &'emma Emma,

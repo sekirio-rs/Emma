@@ -16,11 +16,28 @@ use std::{
 
 const BACKLOG: u32 = 1024;
 
+/// A TCP socket server, listening for connections.
+///
+/// You can accept a new connection asynchorously by calling the
+/// [`accept`](`TcpListener::accept`) method.
+///
+/// # Examples
+/// ```
+/// todo!()
+/// ```
 pub struct TcpListener {
     inner: net::TcpListener,
 }
 
 impl TcpListener {
+    /// Creates a new TcpListener, witch will be bound to the specified address.
+    ///
+    /// The returned listener is ready for accepting connections.
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub fn bind<A: net::ToSocketAddrs>(addr: A) -> Result<Self> {
         let addr = addr
             .to_socket_addrs()
@@ -45,6 +62,12 @@ impl TcpListener {
         Ok(Self { inner: listener })
     }
 
+    /// Accepts a new incoming connection from this listener.
+    ///
+    /// # Examples
+    /// ```
+    /// todo!()
+    /// ```
     pub fn accept<'emma>(
         &'emma self,
         emma: &'emma Emma,
