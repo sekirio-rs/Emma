@@ -32,6 +32,8 @@ pub struct Builder {
 
 impl Builder {
     const DEFAULT_ENTRIES: u32 = 1024; // must be power of 2
+
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             entries: Self::DEFAULT_ENTRIES,
