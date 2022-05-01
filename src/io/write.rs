@@ -1,15 +1,14 @@
-use super::op::Op;
-use super::EmmaBuf;
-use crate::Emma;
-use crate::Result;
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
+use super::{op::Op, EmmaBuf};
+use crate::{Emma, Result};
 use io_uring::{opcode, types};
 use std::os::unix::io::RawFd;
 
 pub struct Write<'write, T> {
     /// currently raw fd
-    fd: RawFd,
+    _fd: RawFd,
     /// buf reference
-    buf: &'write T,
+    _buf: &'write T,
 }
 
 impl<'write, 'emma, T: EmmaBuf + Sync> Op<'emma, Write<'write, T>> {
@@ -23,7 +22,7 @@ impl<'write, 'emma, T: EmmaBuf + Sync> Op<'emma, Write<'write, T>> {
                 .build()
                 .user_data(token as _);
 
-            (entry, Write { fd, buf })
+            (entry, Write { _fd: fd, _buf: buf })
         })
     }
 }

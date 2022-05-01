@@ -1,7 +1,6 @@
-use super::flatten::Flatten;
-use super::map::Map;
-use crate::io::EmmaFuture;
-use crate::io::_Poll;
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
+use super::{flatten::Flatten, map::Map};
+use crate::io::{EmmaFuture, _Poll};
 use std::pin::Pin;
 
 pub struct Then<Fut1, Fut2, F>(Flatten<Map<Fut1, F>, Fut2>);

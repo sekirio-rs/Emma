@@ -1,8 +1,6 @@
 use emma::fs::File as EmmaFile;
-use std::io;
-use std::time;
-use tokio::fs::File as TokioFile;
-use tokio::io::AsyncReadExt;
+use std::{io, time};
+use tokio::{fs::File as TokioFile, io::AsyncReadExt};
 
 const PATH: &str = "README.md";
 const BUFFER_LEN: usize = 1024;
@@ -19,13 +17,13 @@ fn main() -> io::Result<()> {
 
 fn bench_emma() -> io::Result<u128> {
     async fn open_files(emma: &emma::Emma) -> io::Result<Vec<EmmaFile>> {
-        let reactor = emma::Reactor::new(&emma);
+        let reactor = emma::Reactor::new(emma);
         let mut join_fut = emma::Join::new(reactor);
 
         let mut open_futs = Vec::new();
 
         for _ in 0..BENCH_SIZE {
-            let fut = EmmaFile::open(emma, PATH).map_err(|e| e.as_io_error())?;
+            let fut = EmmaFile::open(emma, PATH)?;
             open_futs.push(fut);
         }
 
@@ -33,10 +31,9 @@ fn bench_emma() -> io::Result<u128> {
             join_fut.as_mut().join(fut);
         }
 
-        join_fut
+        Ok(join_fut
             .await
-            .map(|ret| ret.into_iter().map(|f| f.unwrap()).collect())
-            .map_err(|e| e.as_io_error())
+            .map(|ret| ret.into_iter().map(|f| f.unwrap()).collect())?)
     }
 
     let start = time::Instant::now();
@@ -44,7 +41,7 @@ fn bench_emma() -> io::Result<u128> {
     let rt = tokio::runtime::Builder::new_current_thread().build()?;
 
     let _ = rt.block_on(async move {
-        let emma = emma::Builder::new().build().unwrap();
+        let emma = emma::Builder::new().build()?;
 
         let mut files = open_files(&emma).await?;
 
@@ -53,7 +50,7 @@ fn bench_emma() -> io::Result<u128> {
             .map(|_| [0u8; BUFFER_LEN])
             .collect::<Vec<[u8; BUFFER_LEN]>>();
 
-        let read_futs = emma::fs::File::multi_read(&mut files, &emma, &mut bufs).unwrap();
+        let read_futs = emma::fs::File::multi_read(&mut files, &emma, &mut bufs)?;
 
         let reactor = emma::Reactor::new(&emma);
 
@@ -63,7 +60,11 @@ fn bench_emma() -> io::Result<u128> {
             joinned_fut.as_mut().join(fut);
         });
 
-        joinned_fut.await.map(|_| ()).map_err(|e| e.as_io_error())
+        let _ = joinned_fut.await?;
+
+        let ret: std::io::Result<()> = Ok(());
+
+        ret
     })?;
 
     let cost = start.elapsed().as_micros();

@@ -1,13 +1,12 @@
-use super::op::Op;
-use super::EmmaBuf;
-use crate::Emma;
-use crate::Result;
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
+use super::{op::Op, EmmaBuf};
+use crate::{Emma, Result};
 use io_uring::{opcode, types};
 use std::os::unix::io::RawFd;
 
 pub struct Send_<'send, T: ?Sized> {
-    fd: RawFd,
-    buf: &'send T,
+    _fd: RawFd,
+    _buf: &'send T,
 }
 
 impl<'send, 'emma, T: EmmaBuf + Sync + ?Sized> Op<'emma, Send_<'send, T>> {
@@ -21,7 +20,7 @@ impl<'send, 'emma, T: EmmaBuf + Sync + ?Sized> Op<'emma, Send_<'send, T>> {
                 .build()
                 .user_data(token as _);
 
-            (entry, Send_ { fd, buf })
+            (entry, Send_ { _fd: fd, _buf: buf })
         })
     }
 }

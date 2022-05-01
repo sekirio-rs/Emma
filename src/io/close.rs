@@ -1,11 +1,11 @@
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 use super::op::Op;
-use crate::Emma;
-use crate::Result;
+use crate::{Emma, Result};
 use io_uring::{opcode, types};
 use std::os::unix::io::RawFd;
 
 pub struct Close {
-    fd: RawFd,
+    _fd: RawFd,
 }
 
 impl<'emma> Op<'emma, Close> {
@@ -15,7 +15,7 @@ impl<'emma> Op<'emma, Close> {
                 .build()
                 .user_data(token as _);
 
-            (entry, Close { fd })
+            (entry, Close { _fd: fd })
         })
     }
 }

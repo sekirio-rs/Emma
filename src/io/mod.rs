@@ -1,3 +1,4 @@
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
 //! Traits and something else for asynchronous I/O operations.
 pub(crate) mod accept;
 pub(crate) mod close;
@@ -10,7 +11,7 @@ pub(crate) mod write;
 
 use std::pin::Pin;
 
-// todo: use macro
+#[allow(clippy::missing_safety_doc, missing_docs)]
 pub unsafe trait EmmaBuf: Unpin + 'static + Send {
     fn ptr(&self) -> *const u8;
     fn mut_ptr(&mut self) -> *mut u8;
@@ -53,41 +54,22 @@ unsafe impl EmmaBuf for [u8] {
     }
 }
 
+/// Emma version of [`std::task::Poll`]
 pub enum _Poll<T> {
+    /// Emma version of [`std::task::Poll::Ready`]
     Ready(T),
+    /// Emma version of [`std::task::Poll::Pending`]
     Pending(Option<usize>),
 }
 
 /// [`EmmaFuture`] for non-waker-poll design
+///
+/// Emma version of [`std::future::Future`]
 pub trait EmmaFuture {
+    #[allow(missing_docs)]
     type Output;
+    /// Emma verson of [`std::future::Future::poll`]
     fn __poll(self: Pin<&mut Self>) -> _Poll<Self::Output>;
+    /// Return token for identify the [`EmmaFuture`]
     fn __token(self: Pin<&Self>) -> usize;
-}
-
-impl<T> EmmaFuture for Pin<Box<T>>
-where
-    T: EmmaFuture,
-{
-    type Output = <T as EmmaFuture>::Output;
-
-    fn __poll(mut self: Pin<&mut Self>) -> _Poll<Self::Output> {
-        self.as_mut().__poll()
-    }
-
-    fn __token(self: Pin<&Self>) -> usize {
-        self.as_ref().__token()
-    }
-}
-
-impl<'a, T> EmmaFuture for Pin<Box<dyn EmmaFuture<Output = T> + 'a + Unpin>> {
-    type Output = T;
-
-    fn __poll(mut self: Pin<&mut Self>) -> _Poll<Self::Output> {
-        self.as_mut().__poll()
-    }
-
-    fn __token(self: Pin<&Self>) -> usize {
-        self.as_ref().__token()
-    }
 }

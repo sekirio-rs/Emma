@@ -1,12 +1,10 @@
-use crate::error::EmmaError;
-use crate::io::{EmmaFuture, _Poll};
-use crate::Emma;
-use crate::EmmaState;
-use crate::Handle;
-use crate::Inner as EmmaInner;
-use crate::Result;
-use std::marker::PhantomData;
-use std::pin::Pin;
+//! Copyright (C) 2022 SKTT1Ryze. All rights reserved.
+use crate::{
+    error::EmmaError,
+    io::{EmmaFuture, _Poll},
+    Emma, EmmaState, Handle, Inner as EmmaInner, Result,
+};
+use std::{marker::PhantomData, pin::Pin};
 
 pub struct Op<'emma, T> {
     /// token in ['EmmaInner::slab']
@@ -14,7 +12,7 @@ pub struct Op<'emma, T> {
     /// handle of Emma
     handle: Handle<EmmaInner>,
     /// operation data
-    data: Option<T>,
+    _data: Option<T>,
     /// make lifecycle
     _maker: PhantomData<&'emma EmmaInner>,
 }
@@ -24,7 +22,7 @@ impl<'emma, T: Send> Op<'emma, T> {
         Op {
             token,
             handle: emma.inner.clone(),
-            data: Some(data),
+            _data: Some(data),
             _maker: PhantomData,
         }
     }
@@ -45,7 +43,7 @@ impl<'emma, T: Send> Op<'emma, T> {
         let mut uring = emma.uring.borrow_mut();
 
         if uring.submission().is_full() {
-            uring.submit().map_err(|e| EmmaError::IoError(e))?; // flush to kernel
+            uring.submit().map_err(EmmaError::IoError)?; // flush to kernel
         }
 
         let mut sq = uring.submission();
