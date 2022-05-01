@@ -12,6 +12,7 @@ pub struct Reactor<'emma> {
 }
 
 impl Reactor<'_> {
+    #[allow(clippy::needless_lifetimes)]
     pub fn new<'emma>(emma: &'emma Emma) -> Reactor<'emma> {
         Reactor {
             uring_handle: emma.uring.clone(),

@@ -65,7 +65,7 @@ impl File {
     }
 
     pub fn multi_read<'emma, T: EmmaBuf>(
-        files: &mut Vec<Self>,
+        files: &mut [Self],
         emma: &'emma Emma,
         bufs: &'emma mut Vec<T>,
     ) -> Result<Vec<Pin<Box<op::Op<'emma, read::Read<'emma, T>>>>>> {
@@ -94,7 +94,7 @@ impl File {
     }
 
     pub fn multi_write<'emma, T: EmmaBuf + Sync>(
-        files: &mut Vec<Self>,
+        files: &mut [Self],
         emma: &'emma Emma,
         bufs: &'emma Vec<T>,
     ) -> Result<Vec<Pin<Box<op::Op<'emma, write::Write<'emma, T>>>>>> {
