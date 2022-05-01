@@ -9,8 +9,8 @@ use std::os::unix::prelude::OsStrExt;
 use std::path::Path;
 
 pub struct Open {
-    dirfd: Option<libc::c_int>,
-    path: CString,
+    _dirfd: Option<libc::c_int>,
+    _path: CString,
 }
 
 bitflags! {
@@ -44,7 +44,7 @@ impl<'emma> Op<'emma, Open> {
                 .build()
                 .user_data(token as _);
 
-            (entry, Open { dirfd: None, path })
+            (entry, Open { _dirfd: None, _path: path })
         })
     }
 }

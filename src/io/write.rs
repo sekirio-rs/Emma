@@ -7,9 +7,9 @@ use std::os::unix::io::RawFd;
 
 pub struct Write<'write, T> {
     /// currently raw fd
-    fd: RawFd,
+    _fd: RawFd,
     /// buf reference
-    buf: &'write T,
+    _buf: &'write T,
 }
 
 impl<'write, 'emma, T: EmmaBuf + Sync> Op<'emma, Write<'write, T>> {
@@ -23,7 +23,7 @@ impl<'write, 'emma, T: EmmaBuf + Sync> Op<'emma, Write<'write, T>> {
                 .build()
                 .user_data(token as _);
 
-            (entry, Write { fd, buf })
+            (entry, Write { _fd: fd, _buf: buf })
         })
     }
 }

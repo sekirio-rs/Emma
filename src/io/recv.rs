@@ -6,8 +6,8 @@ use io_uring::{opcode, types};
 use std::os::unix::io::RawFd;
 
 pub struct Recv<'recv, T: ?Sized> {
-    fd: RawFd,
-    buf: &'recv mut T,
+    _fd: RawFd,
+    _buf: &'recv mut T,
 }
 
 impl<'recv, 'emma, T: EmmaBuf + ?Sized> Op<'emma, Recv<'recv, T>> {
@@ -21,7 +21,7 @@ impl<'recv, 'emma, T: EmmaBuf + ?Sized> Op<'emma, Recv<'recv, T>> {
                 .build()
                 .user_data(token as _);
 
-            (entry, Recv { fd, buf })
+            (entry, Recv { _fd: fd, _buf: buf })
         })
     }
 }

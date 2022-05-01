@@ -14,7 +14,7 @@ pub struct Op<'emma, T> {
     /// handle of Emma
     handle: Handle<EmmaInner>,
     /// operation data
-    data: Option<T>,
+    _data: Option<T>,
     /// make lifecycle
     _maker: PhantomData<&'emma EmmaInner>,
 }
@@ -24,7 +24,7 @@ impl<'emma, T: Send> Op<'emma, T> {
         Op {
             token,
             handle: emma.inner.clone(),
-            data: Some(data),
+            _data: Some(data),
             _maker: PhantomData,
         }
     }

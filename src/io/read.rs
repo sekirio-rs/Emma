@@ -7,9 +7,9 @@ use std::os::unix::io::RawFd;
 
 pub struct Read<'read, T> {
     /// currently raw fd
-    fd: RawFd,
+    _fd: RawFd,
     /// buf reference
-    buf: &'read mut T,
+    _buf: &'read mut T,
 }
 
 impl<'read, 'emma, T: EmmaBuf> Op<'emma, Read<'read, T>> {
@@ -23,7 +23,7 @@ impl<'read, 'emma, T: EmmaBuf> Op<'emma, Read<'read, T>> {
                 .build()
                 .user_data(token as _);
 
-            (entry, Read { fd, buf })
+            (entry, Read { _fd: fd, _buf: buf })
         })
     }
 }
